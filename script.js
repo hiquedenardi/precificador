@@ -31,7 +31,7 @@ const THEME_KEY = 'precificador_theme_v149';
         premium: { rate: 19, fixed: 0 }
       },
       tiktok: {
-        standard: { rate: 6, fixed: 2 }
+        standard: { rate: 12, fixed: 2 }
       }
     };
 
@@ -102,7 +102,9 @@ const THEME_KEY = 'precificador_theme_v149';
     let currentTheme = loadTheme();
     let currentWorkspaceView = loadWorkspaceView();
     const HOME_TAB_KEY = 'precificador_home_tab_v1';
+    const UI_MODE_KEY = 'precificador_ui_mode_v1';
     let currentHomeTab = loadHomeTab();
+    let currentInterfaceMode = loadInterfaceMode();
 
     function loadProfile() {
       const parsed = readJSONStorage(PROFILE_KEY, {});
@@ -197,6 +199,39 @@ const THEME_KEY = 'precificador_theme_v149';
     function toggleTheme() {
       saveTheme(currentTheme === 'dark' ? 'light' : 'dark');
       applyTheme();
+    }
+
+    function loadInterfaceMode() {
+      const saved = localStorage.getItem(UI_MODE_KEY);
+      return saved === 'advanced' ? 'advanced' : 'simple';
+    }
+
+    function saveInterfaceMode() {
+      localStorage.setItem(UI_MODE_KEY, currentInterfaceMode);
+    }
+
+    function setInterfaceMode(mode = 'simple') {
+      currentInterfaceMode = mode === 'advanced' ? 'advanced' : 'simple';
+      saveInterfaceMode();
+      document.body.classList.toggle('ui-simple', currentInterfaceMode === 'simple');
+      document.body.classList.toggle('ui-advanced', currentInterfaceMode === 'advanced');
+
+      const simpleBtn = document.getElementById('ui-mode-simple-btn');
+      const advancedBtn = document.getElementById('ui-mode-advanced-btn');
+      if (simpleBtn) simpleBtn.classList.toggle('active', currentInterfaceMode === 'simple');
+      if (advancedBtn) advancedBtn.classList.toggle('active', currentInterfaceMode === 'advanced');
+
+      document.querySelectorAll('[data-ui-mode]').forEach((el) => {
+        const target = el.getAttribute('data-ui-mode');
+        const shouldShow = target === currentInterfaceMode;
+        el.classList.toggle('hidden', !shouldShow);
+      });
+
+      const noticePopup = document.getElementById('notice-popup');
+      if (noticePopup && currentInterfaceMode === 'simple') {
+        noticePopup.classList.add('hidden');
+      }
+      renderSimpleCalculator();
     }
 
     function loadHomeTab() {
@@ -3800,6 +3835,109 @@ Deseja substituir tudo pelos dados do arquivo?`,
       document.getElementById('marketplace-fee-help')?.classList.toggle('hidden', !showMarketplaceConfig);
     }
 
+    function getSimpleCalculatorData() {
+      return {
+        marketplace: document.getElementById('simple-marketplace')?.value || 'shopee',
+        nome: (document.getElementById('simple-name')?.value || '').trim(),
+        custo: parseLocaleNumber(document.getElementById('simple-cost')?.value || 0) || 0,
+        precoVendaFixo: parseLocaleNumber(document.getElementById('simple-price')?.value || 0) || 0
+      };
+    }
+
+    function buildSimpleCalculatorProduct() {
+      const data = getSimpleCalculatorData();
+      return createBaseProduct({
+        nome: data.nome || 'Simulação rápida',
+        marketplace: data.marketplace,
+        custo: data.custo,
+        precoVendaFixo: data.precoVendaFixo,
+        modo: 'preco',
+        margem: 0,
+        roas: 0
+      });
+    }
+
+    function renderSimpleCalculator() {
+      const priceEl = document.getElementById('simple-result-price');
+      const profitEl = document.getElementById('simple-result-profit');
+      const marginEl = document.getElementById('simple-result-margin');
+      const statusEl = document.getElementById('simple-result-status');
+      const alertEl = document.getElementById('simple-result-alert');
+      const noteEl = document.getElementById('simple-marketplace-note');
+      if (!priceEl || !profitEl || !marginEl || !statusEl || !alertEl) return;
+
+      const data = getSimpleCalculatorData();
+      const needsInput = data.custo <= 0 || data.precoVendaFixo <= 0;
+
+      if (data.marketplace === 'mercadolivre') {
+        noteEl.textContent = 'No Mercado Livre, a comissão muda por categoria. Use o modo avançado para informar a taxa exata da sua categoria quando precisar.';
+        noteEl.classList.remove('hidden');
+      } else if (data.marketplace === 'tiktok') {
+        noteEl.textContent = 'No TikTok Shop, a conta usa 12% de comissão + R$ 2,00 fixos.';
+        noteEl.classList.remove('hidden');
+      } else {
+        noteEl.classList.add('hidden');
+        noteEl.textContent = '';
+      }
+
+      if (needsInput) {
+        priceEl.textContent = 'R$ 0,00';
+        profitEl.textContent = 'R$ 0,00';
+        marginEl.textContent = '0%';
+        statusEl.textContent = 'Preencha os campos';
+        alertEl.textContent = 'Preencha custo e preço para ver a leitura.';
+        alertEl.className = 'simple-result-alert';
+        return;
+      }
+
+      const result = calcProduct(buildSimpleCalculatorProduct());
+      const health = getHealthInfo(result);
+
+      priceEl.textContent = fmt(result.precoVenda);
+      profitEl.textContent = result.inviavel ? '—' : fmt(result.lucro);
+      profitEl.className = result.lucro >= 0 ? 'metric-good-text' : 'metric-bad-text';
+      marginEl.textContent = result.inviavel ? '—' : formatPercent(result.margemReal);
+      statusEl.textContent = health.statusText;
+      alertEl.textContent = health.diagnostico;
+      alertEl.className = `simple-result-alert ${result.inviavel || result.lucro < 0 ? 'bad' : result.margemReal < 10 ? 'warn' : 'good'}`;
+    }
+
+    function saveSimpleProduct() {
+      const data = getSimpleCalculatorData();
+      if (data.custo <= 0 || data.precoVendaFixo <= 0) {
+        showToast('Preencha custo e preço antes de salvar.', 'info');
+        return;
+      }
+      const product = buildSimpleCalculatorProduct();
+      const validationError = validateProduct(product, null, '');
+      if (validationError) {
+        showToast(validationError, 'error');
+        return;
+      }
+      addProductRecord(product);
+      saveProducts();
+      renderProducts();
+      showToast('Produto salvo a partir da calculadora rápida.', 'success');
+      setHomeTab('products');
+    }
+
+    async function openSimpleAdvanced() {
+      const data = getSimpleCalculatorData();
+      if (data.custo <= 0 && !data.nome) {
+        showToast('Preencha pelo menos nome ou custo antes de abrir a ficha completa.', 'info');
+        return;
+      }
+      await openModal();
+      setFormState({
+        nome: data.nome,
+        custo: data.custo,
+        marketplace: data.marketplace,
+        precoVendaFixo: data.precoVendaFixo,
+        modo: 'preco'
+      });
+      calcPreview();
+    }
+
     function setAccessStatus(targetId, message = '', tone = '') {
       const el = document.getElementById(targetId);
       if (!el) return;
@@ -4045,6 +4183,37 @@ Deseja substituir tudo pelos dados do arquivo?`,
       quickCostInput.addEventListener('blur', () => formatMoneyField(quickCostInput));
     }
 
+    const simpleCostInput = document.getElementById('simple-cost');
+    if (simpleCostInput) {
+      simpleCostInput.addEventListener('input', () => {
+        handleMoneyTyping(simpleCostInput);
+        renderSimpleCalculator();
+      });
+      simpleCostInput.addEventListener('blur', () => {
+        formatMoneyField(simpleCostInput);
+        renderSimpleCalculator();
+      });
+    }
+
+    const simplePriceInput = document.getElementById('simple-price');
+    if (simplePriceInput) {
+      simplePriceInput.addEventListener('input', () => {
+        handleMoneyTyping(simplePriceInput);
+        renderSimpleCalculator();
+      });
+      simplePriceInput.addEventListener('blur', () => {
+        formatMoneyField(simplePriceInput);
+        renderSimpleCalculator();
+      });
+    }
+
+    ['simple-name', 'simple-marketplace'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', renderSimpleCalculator);
+      el.addEventListener('change', renderSimpleCalculator);
+    });
+
     const bulkFixedInput = document.getElementById('bulk-fixed');
     if (bulkFixedInput) {
       bulkFixedInput.addEventListener('input', () => handleMoneyTyping(bulkFixedInput));
@@ -4077,12 +4246,10 @@ Deseja substituir tudo pelos dados do arquivo?`,
     const modalEl = document.getElementById('modal');
     if (modalEl) modalEl.addEventListener('paste', handleSmartPaste);
 
-    setTimeout(() => {
-      if (shouldShowNoticePopup()) showNoticePopup();
-    }, 320);
 
     updateProfileUI();
     applyTheme();
+    setInterfaceMode(currentInterfaceMode);
     applyTableDensity();
     applyPanelVisibility();
     applyColumnVisibility();
@@ -4092,6 +4259,7 @@ Deseja substituir tudo pelos dados do arquivo?`,
     setWorkspaceView(currentWorkspaceView, { syncHome: false });
     renderProducts();
     setHomeTab(currentHomeTab);
+    renderSimpleCalculator();
     calcPreview();
     updateSaveButtonState();
     updateSessionBadge();
