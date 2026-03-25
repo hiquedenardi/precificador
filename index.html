@@ -215,10 +215,22 @@
           <button type="button" id="app-tab-products" class="app-tab-btn" onclick="setHomeTab('products')">Produtos</button>
           <button type="button" id="app-tab-listings" class="app-tab-btn" onclick="setHomeTab('listings')">Anúncios</button>
         </div>
+
+      <div class="mode-strip">
+        <div class="mode-strip-copy">
+          <p class="mode-strip-kicker">Visual guiado</p>
+          <h3>Comece no simples. Abra o avançado só quando precisar.</h3>
+          <p>No modo simples, você vê só o essencial para calcular com calma. No avançado, entram comparativos, leitura de concorrente, tabelas e ajustes finos.</p>
+        </div>
+        <div class="mode-toggle" role="tablist" aria-label="Escolha o modo de uso">
+          <button type="button" id="ui-mode-simple-btn" class="mode-toggle-btn active" onclick="setInterfaceMode('simple')">Modo simples</button>
+          <button type="button" id="ui-mode-advanced-btn" class="mode-toggle-btn" onclick="setInterfaceMode('advanced')">Modo avançado</button>
+        </div>
+      </div>
       </div>
     </section>
 
-    <section class="surface p-2 sm:p-3" data-app-tab="calculator">
+    <section class="surface p-2 sm:p-3" data-app-tab="calculator" data-ui-mode="advanced">
       <div class="grid gap-2 md:grid-cols-4">
         <button onclick="setMarketplace('todos')" id="tab-todos" class="market-tab active">
           <span class="market-logo market-logo-neutral">
@@ -279,12 +291,91 @@
       </div>
     </section>
 
+    <section class="surface simple-calc-card" data-app-tab="calculator" data-ui-mode="simple">
+      <div class="simple-calc-head">
+        <div>
+          <p class="simple-calc-kicker">Calculadora rápida</p>
+          <h3>Preencha só o básico e veja quanto sobra.</h3>
+          <p>Ideal para promoções novas, conferência rápida de preço e validação antes de publicar.</p>
+        </div>
+        <div class="simple-calc-tip">
+          <strong>Passo a passo fácil</strong>
+          <span>Nome, custo, valor de venda e plataforma. O restante pode ficar para depois.</span>
+        </div>
+      </div>
+
+      <div class="simple-calc-grid">
+        <div>
+          <label class="field-label" for="simple-marketplace">Plataforma</label>
+          <select id="simple-marketplace" class="apple-select">
+            <option value="shopee">Shopee</option>
+            <option value="mercadolivre">Mercado Livre</option>
+            <option value="tiktok">TikTok Shop</option>
+          </select>
+          <p class="helper-text">Escolha onde o anúncio vai rodar.</p>
+        </div>
+        <div>
+          <label class="field-label" for="simple-name">Nome do produto</label>
+          <input type="text" id="simple-name" class="apple-input" placeholder="Ex: Protetor de colchão casal" />
+          <p class="helper-text">Só para você se localizar melhor na conta.</p>
+        </div>
+        <div>
+          <label class="field-label" for="simple-cost">Custo que paguei</label>
+          <input type="text" inputmode="decimal" id="simple-cost" class="apple-input" placeholder="0,00" />
+          <p class="helper-text">Valor pago no produto, sem complicação.</p>
+        </div>
+        <div>
+          <label class="field-label" for="simple-price">Por quanto quero vender</label>
+          <input type="text" inputmode="decimal" id="simple-price" class="apple-input" placeholder="0,00" />
+          <p class="helper-text">Digite o valor que pretende anunciar.</p>
+        </div>
+      </div>
+
+      <div id="simple-marketplace-note" class="simple-marketplace-note hidden"></div>
+
+      <div class="simple-result-grid">
+        <article class="simple-result-card">
+          <span>Preço anunciado</span>
+          <strong id="simple-result-price">R$ 0,00</strong>
+        </article>
+        <article class="simple-result-card">
+          <span>Lucro que vai sobrar</span>
+          <strong id="simple-result-profit">R$ 0,00</strong>
+        </article>
+        <article class="simple-result-card">
+          <span>Margem final</span>
+          <strong id="simple-result-margin">0%</strong>
+        </article>
+        <article class="simple-result-card">
+          <span>Leitura rápida</span>
+          <strong id="simple-result-status">Preencha os campos</strong>
+        </article>
+      </div>
+
+      <div id="simple-result-alert" class="simple-result-alert">Preencha custo e preço para ver a leitura.</div>
+
+      <div class="simple-calc-actions">
+        <button type="button" class="btn btn-primary" onclick="saveSimpleProduct()">Salvar nos produtos</button>
+        <button type="button" class="btn btn-secondary" onclick="openSimpleAdvanced()">Abrir ficha completa</button>
+      </div>
+
+      <details class="helper-details">
+        <summary>Como preencher isso?</summary>
+        <div class="helper-details-body">
+          <p>1. Escolha a plataforma.</p>
+          <p>2. Digite o custo que você pagou.</p>
+          <p>3. Digite o valor que quer cobrar no anúncio.</p>
+          <p>4. Veja o lucro estimado antes de publicar.</p>
+        </div>
+      </details>
+    </section>
+
     <section class="grid gap-5" data-app-tab="calculator">
-      <section id="compare-panel" class="compare-card strategic-panel">
+      <section id="compare-panel" class="compare-card strategic-panel" data-ui-mode="advanced">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Comparativo</p>
-            <h3 class="mt-1 text-lg font-black text-slate-950">Comparar canais</h3>
+            <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Comparar plataformas</p>
+            <h3 class="mt-1 text-lg font-black text-slate-950">Comparar plataformas</h3>
             <p class="mt-1 text-sm text-slate-500">Veja lado a lado quanto sobra em cada canal e qual preço segura o mesmo lucro com menos tentativa e erro.</p>
           </div>
           <button type="button" onclick="runCompareChannels()" class="btn btn-secondary sm:w-auto">Comparar canais</button>
@@ -307,7 +398,7 @@
         </div>
       </section>
     </section>
-    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-app-tab="calculator">
+    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-app-tab="calculator" data-ui-mode="advanced">
       <div class="stat-card">
         <div class="flex items-start justify-between gap-3">
           <div>
@@ -376,7 +467,7 @@
       </div>
     </section>
 
-    <section id="taxes-section" class="surface overflow-hidden hidden" data-app-tab="calculator">
+    <section id="taxes-section" class="surface overflow-hidden hidden" data-app-tab="calculator" data-ui-mode="advanced">
       <button onclick="toggleTabela()" class="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6">
         <div class="min-w-0">
           <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Taxas</p>
@@ -475,7 +566,7 @@
         </select>
       </div>
 
-      <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200/70 pt-4">
+      <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200/70 pt-4" data-ui-mode="advanced">
         <button type="button" id="density-toggle-btn" onclick="toggleTableDensity()" class="btn btn-secondary panel-toggle-btn">Densidade compacta</button>
         <div id="columns-menu-wrap" class="columns-menu-wrap">
           <button type="button" id="columns-menu-btn" onclick="toggleColumnsMenu()" class="btn btn-secondary panel-toggle-btn">Colunas visíveis</button>
@@ -495,7 +586,7 @@
       <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
           <p class="text-sm font-semibold text-slate-800" id="results-summary">0 produtos.</p>
-          <p class="mt-1 text-xs text-slate-400" id="autosave-indicator">Auto-save ativo para edição inline.</p>
+          <p class="mt-1 text-xs text-slate-400" id="autosave-indicator">Salvamento automático ativo durante a edição.</p>
         </div>
         <div class="hidden flex-wrap gap-2" id="quick-summary-tags">
           <span class="tag tag-neutral">Sem dados ainda</span>
@@ -516,7 +607,7 @@
           <button type="button" id="workspace-view-products-btn" class="segmented-btn active" onclick="setWorkspaceView('products')">Produtos</button>
           <button type="button" id="workspace-view-listings-btn" class="segmented-btn" onclick="setWorkspaceView('listings')">Anúncios</button>
         </div>
-        <div class="workspace-toolbar-actions">
+        <div class="workspace-toolbar-actions" data-ui-mode="advanced">
           <button type="button" class="btn btn-secondary panel-toggle-btn" onclick="toggleImportPanel()">Importar por planilha</button>
         </div>
       </div>
@@ -546,7 +637,7 @@
             <input type="text" inputmode="decimal" id="quick-custo" class="apple-input" placeholder="0,00" />
           </div>
           <div>
-            <label class="field-label" for="quick-marketplace">Canal inicial</label>
+            <label class="field-label" for="quick-marketplace">Plataforma inicial</label>
             <select id="quick-marketplace" class="apple-select">
               <option value="shopee">Shopee</option>
               <option value="mercadolivre">Mercado Livre</option>
@@ -554,7 +645,7 @@
             </select>
           </div>
           <div>
-            <label class="field-label" for="quick-margem">Margem alvo %</label>
+            <label class="field-label" for="quick-margem">Margem alvo (%)</label>
             <input type="number" id="quick-margem" class="apple-input" placeholder="20" min="0" step="0.1" />
           </div>
           <button type="button" onclick="saveQuickProduct()" class="btn btn-primary">Salvar rápido</button>
@@ -563,7 +654,7 @@
         <div class="quick-entry-help">Fluxo rápido: cadastre o produto base e depois vincule os canais. A visão Produtos agrupa SKU + nome para você não operar item duplicado.</div>
       </div>
 
-      <div id="bulk-bar" class="bulk-bar hidden">
+      <div id="bulk-bar" class="bulk-bar hidden" data-ui-mode="advanced">
         <div class="bulk-copy">
           <strong id="bulk-count">0 produtos selecionados</strong>
           <span id="bulk-copy-text">Selecione itens para aplicar canal, margem, taxa manual, desconto ou tipo de anúncio de uma vez.</span>
@@ -628,7 +719,7 @@
           <thead>
             <tr>
               <th>Produto base</th>
-              <th>SKU</th>
+              <th>Código do produto (SKU)</th>
               <th>Canais</th>
               <th class="grid-num">Custo base</th>
               <th class="grid-num">Melhor preço</th>
@@ -662,7 +753,7 @@
       </div>
     </section>
 
-    <section id="mentor-panel" class="mentor-panel strategic-panel p-4 sm:p-5" data-app-tab="calculator">
+    <section id="mentor-panel" class="mentor-panel strategic-panel p-4 sm:p-5" data-app-tab="calculator" data-ui-mode="advanced">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Assistente</p>
@@ -684,20 +775,20 @@
       </div>
     </section>
 
-    <section id="spy-panel" class="surface strategic-panel p-4 sm:p-5" data-app-tab="calculator">
+    <section id="spy-panel" class="surface strategic-panel p-4 sm:p-5" data-app-tab="calculator" data-ui-mode="advanced">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Concorrência</p>
+          <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Análise de concorrente (Spy)</p>
           <h3 class="mt-1 text-lg font-black text-slate-950">Concorrentes</h3>
-          <p class="mt-1 text-sm text-slate-500">Cole o link do anúncio do concorrente e o painel faz uma leitura comercial assistida: detecta o canal, tenta inferir o título e calcula o impacto se você igualar o preço.</p>
+          <p class="mt-1 text-sm text-slate-500">Cole o link do anúncio do concorrente e o painel faz uma leitura assistida: detecta o canal, tenta identificar o título e calcula o impacto se você igualar o preço.</p>
         </div>
-        <button type="button" onclick="runSpyAnalysis()" class="btn btn-secondary sm:w-auto">Analisar concorrente</button>
+        <button type="button" onclick="runSpyAnalysis()" class="btn btn-secondary sm:w-auto">Analisar concorrente (Spy)</button>
       </div>
 
       <div class="spy-shell mt-4">
         <div class="spy-grid">
           <div>
-            <label class="field-label" for="spy-product-select">Comparar com</label>
+            <label class="field-label" for="spy-product-select">Comparar com meu produto</label>
             <select id="spy-product-select" class="apple-select">
               <option value="">Selecione um produto</option>
             </select>
@@ -765,9 +856,10 @@
 
               <div class="mt-3 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label class="field-label" for="prod-sku">SKU</label>
+                  <label class="field-label" for="prod-sku">Código do produto (SKU)</label>
                   <div class="input-with-action">
                     <input type="text" id="prod-sku" placeholder="Ex: KLEN-QN-BR" class="apple-input" />
+                    <p class="helper-text">Código interno para localizar o produto depois.</p>
                     <button type="button" class="mini-copy-btn" onclick="copySkuField()">Copiar</button>
                   </div>
                 </div>
@@ -877,10 +969,12 @@
                 <div>
                   <label class="field-label" for="prod-outros">Embalagem (R$)</label>
                   <input type="text" inputmode="decimal" id="prod-outros" placeholder="0,00" class="apple-input" oninput="calcPreview()" />
+                  <p class="helper-text">Teve gasto com embalagem, saco ou plástico bolha? Coloque aqui.</p>
                 </div>
                 <div>
                   <label class="field-label" for="prod-full">FULL (R$)</label>
                   <input type="text" inputmode="decimal" id="prod-full" placeholder="0,00" class="apple-input" oninput="calcPreview()" />
+                  <p class="helper-text">Preencha se existir custo do FULL ou logística extra.</p>
                 </div>
                 <div>
                   <label class="field-label" for="prod-imposto">Imposto (%)</label>
@@ -892,7 +986,7 @@
                 </div>
                 <div>
                   <label class="field-label tooltip-wrap" for="prod-roas">
-                    <span>ROAS</span>
+                    <span>Gasto com anúncios (ROAS)</span>
                     <span tabindex="0" class="tooltip-icon" aria-label="Explicação sobre ROAS">
                       <svg viewBox="0 0 24 24" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
                         <path d="M12 16.2v.1M12 10.6a2 2 0 1 1 2-2M12 12.6v.2M21 12A9 9 0 1 1 3 12a9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -901,7 +995,7 @@
                     <div class="tooltip-bubble" role="tooltip">
                       <p>Preencha apenas se for usar Shopee Ads. Deixe em branco caso contrário.</p>
                       <hr>
-                      <p>ROAS (Retorno Sobre Investimento em Anúncios). Ex: um ROAS 10 significa que para cada R$1 gasto em ADS, você fatura R$10.</p>
+                      <p>Gasto com anúncios (ROAS). Exemplo: um ROAS 10 significa que, para cada R$1 gasto em anúncios, você fatura R$10.</p>
                       <hr>
                       <p>Recomendação geral: inicie com um ROAS alvo de 35 nas suas campanhas e otimize com o tempo.</p>
                     </div>
@@ -915,27 +1009,23 @@
               </div>
             </section>
 
-            <section class="field-card">
-              <div class="flex items-center justify-between gap-3">
-                <div>
-                  <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Tour guiado</p>
-                  <h3 class="mt-1 text-lg font-black text-slate-900">Como preencher sem travar</h3>
+            <details class="field-card helper-details">
+              <summary>Como preencher isso?</summary>
+              <div class="helper-details-body">
+                <div class="tour-list">
+                  <div class="tour-step"><strong>1. Dados principais</strong><span>Use nome e código do produto (SKU) para manter a base organizada.</span></div>
+                  <div class="tour-step"><strong>2. Escolha o canal certo</strong><span>Selecione Shopee, Mercado Livre ou TikTok Shop. A calculadora muda as taxas conforme a plataforma.</span></div>
+                  <div class="tour-step"><strong>3. Defina o caminho do preço</strong><span>Margem é o modo mais seguro. Preço de venda ajuda a conferir um valor já definido. Lucro desejado serve quando você já sabe quanto quer ganhar.</span></div>
+                  <div class="tour-step"><strong>4. Gasto com anúncios (ROAS)</strong><span>Preencha só se estiver usando campanha paga. Se não tiver anúncio rodando, deixe em branco.</span></div>
+                  <div class="tour-step"><strong>5. Promoção e disputa de preço</strong><span>Use a prévia para conferir se ainda sobra lucro depois de desconto, taxa e custos extras.</span></div>
                 </div>
-                <span class="tag tag-neutral">Passo a passo</span>
               </div>
-              <div class="tour-list">
-                <div class="tour-step"><strong>1. Dados principais</strong><span>Use ID, nome e SKU para manter a base limpa. Se você estiver importando muita coisa, pode colar uma linha do Excel direto na ficha.</span></div>
-                <div class="tour-step"><strong>2. Escolha o canal certo</strong><span>Selecione Shopee, Mercado Livre ou TikTok. A calculadora troca a lógica de taxa e mostra campos extras quando o canal exigir.</span></div>
-                <div class="tour-step"><strong>3. Defina o caminho do preço</strong><span>Margem é o modo mais seguro. Preço fixo serve para validar um valor já definido. Lucro desejado é o caminho inverso para chegar ao valor de venda.</span></div>
-                <div class="tour-step"><strong>4. Ads e ROAS</strong><span>Preencha apenas se for usar Shopee Ads. Deixe em branco caso contrário. Um ROAS 10 significa que para cada R$1 gasto em Ads, você fatura R$10. Recomendação geral: comece mirando ROAS 35 e ajuste com o tempo.</span></div>
-                <div class="tour-step"><strong>5. Promoção e guerra de preço</strong><span>Use a prévia, o comparativo de canais e o simulador de guerra de preço para decidir sem chute. Quando a margem ficar curta, o Mentor vai te avisar.</span></div>
-              </div>
-            </section>
+            </details>
 
             <section id="drafts-panel" class="field-card hidden">
               <div class="flex flex-col gap-3 border-b border-slate-200/70 pb-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Rascunhos</p>
+                  <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Trabalhos salvos (Rascunhos)</p>
                   <h3 class="mt-1 text-lg font-black text-slate-900">Rascunhos rápidos</h3>
                   <p class="mt-1 text-sm text-slate-500">A ficha salva sozinha aqui quando você fecha sem concluir.</p>
                 </div>
@@ -1017,8 +1107,8 @@
               <div class="dre-shell mt-4">
                 <div class="flex items-center justify-between gap-3">
                   <div>
-                    <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">DRE visual</p>
-                    <h4 class="mt-1 text-base font-black text-slate-950">Gráfico de cascata</h4>
+                    <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Divisão de custos (DRE)</p>
+                    <h4 class="mt-1 text-base font-black text-slate-950">Caminho do dinheiro</h4>
                   </div>
                   <span class="tag tag-neutral">Preço x custos x lucro</span>
                 </div>
@@ -1028,7 +1118,7 @@
               <div class="war-shell mt-4">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Guerra de preços</p>
+                    <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Disputa de preço (Buybox)</p>
                     <h4 class="mt-1 text-base font-black text-slate-950">Simulador de sensibilidade</h4>
                   </div>
                   <span class="tag tag-neutral">Modo E se...</span>
@@ -1293,7 +1383,7 @@
             </div>
             <div class="sm:col-span-2">
               <label class="field-label" for="profile-pain">Maior dor hoje</label>
-              <input type="text" id="profile-pain" class="apple-input" placeholder="Ex: taxa fixa, Ads, giro, kit, Buybox, ERP" />
+              <input type="text" id="profile-pain" class="apple-input" placeholder="Ex: taxa fixa, anúncios, giro, kit, Buybox, ERP" />
             </div>
           </div>
 

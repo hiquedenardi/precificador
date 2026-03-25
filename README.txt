@@ -1,1 +1,1 @@
-Versão v1.47 com Data Grid, cadastro express e bulk edit.
+Refatoração de UI/UX focada em modo simples e acessibilidade.
