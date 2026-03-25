@@ -1,6 +1,6 @@
     const STORAGE_KEY = 'shopee_products';
     const DRAFTS_KEY = 'precificador_product_drafts';
-    const APP_VERSION = 'Precificador_v1.50';
+    const APP_VERSION = 'Precificador_v1.49';
     const PROFILE_KEY = 'precificador_profile_v1';
     let currentDetailProductId = null;
     const NOTICE_KEY = 'precificador_notice_state';
@@ -9,8 +9,7 @@
     const PANEL_PREFS_KEY = 'precificador_panel_visibility_v149';
     const TABLE_DENSITY_KEY = 'precificador_table_density_v149';
 const THEME_KEY = 'precificador_theme_v149';
-    const WORKSPACE_VIEW_KEY = 'precificador_workspace_view_v150';
-    const CALCULATOR_STATE_KEY = 'precificador_calculator_state_v150';
+    const WORKSPACE_VIEW_KEY = 'precificador_workspace_view_v149';
     const FORM_FIELD_IDS = ['prod-id-custom', 'prod-nome', 'prod-sku', 'prod-custo', 'prod-margem', 'prod-preco-fixo', 'prod-lucro-desejado', 'prod-outros', 'prod-full', 'prod-desconto', 'prod-imposto', 'prod-afiliados', 'prod-roas', 'prod-categoria', 'prod-listing-type', 'prod-marketplace-rate', 'prod-marketplace-fixed'];
     const MONEY_FIELD_IDS = ['prod-custo', 'prod-preco-fixo', 'prod-lucro-desejado', 'prod-outros', 'prod-full', 'prod-marketplace-fixed'];
     let searchDebounceTimer = null;
@@ -28,11 +27,11 @@ const THEME_KEY = 'precificador_theme_v149';
         { max: null, rate: 14, fixed: 26 }
       ],
       mercadoLivre: {
-        classic: { rate: 0, fixed: 0 },
-        premium: { rate: 0, fixed: 0 }
+        classic: { rate: 16, fixed: 6 },
+        premium: { rate: 19, fixed: 0 }
       },
       tiktok: {
-        standard: { rate: 12, fixed: 2 }
+        standard: { rate: 6, fixed: 2 }
       }
     };
 
@@ -95,45 +94,13 @@ const THEME_KEY = 'precificador_theme_v149';
     let drafts = safeLoadDrafts();
     let selectedProductIds = new Set();
     let lastVisibleProductIds = [];
-    const DEFAULT_VISIBLE_COLUMNS = { id: true, title: true, sku: true, marketplace: true, custo: true, preco: true, lucro: true, margem: true, status: true };
-    const DEFAULT_PANEL_VISIBILITY = { compare: false, mentor: false, spy: false };
+    const DEFAULT_VISIBLE_COLUMNS = { product: true, marketplace: true, custo: true, target: true, preco: true, lucro: true, margem: true, status: true };
+    const DEFAULT_PANEL_VISIBILITY = { compare: true, mentor: true, spy: true };
     let visibleColumns = loadVisibleColumns();
     let panelVisibility = loadPanelVisibility();
     let isCompactDensity = loadTableDensity();
     let currentTheme = loadTheme();
     let currentWorkspaceView = loadWorkspaceView();
-    let calculatorState = loadCalculatorState();
-
-    function normalizeCalculatorState(raw = {}) {
-      return {
-        idCustom: typeof raw.idCustom === 'string' ? raw.idCustom : '',
-        nome: typeof raw.nome === 'string' ? raw.nome : '',
-        sku: typeof raw.sku === 'string' ? raw.sku : '',
-        marketplace: ['shopee', 'mercadolivre', 'tiktok'].includes(raw.marketplace) ? raw.marketplace : 'shopee',
-        mode: ['margem', 'preco', 'lucro'].includes(raw.mode) ? raw.mode : 'margem',
-        custo: numberOrZero(raw.custo),
-        margem: raw.margem == null || raw.margem === '' ? 20 : numberOrZero(raw.margem),
-        precoVendaFixo: numberOrZero(raw.precoVendaFixo),
-        lucroDesejado: numberOrZero(raw.lucroDesejado),
-        outros: numberOrZero(raw.outros),
-        full: numberOrZero(raw.full),
-        desconto: numberOrZero(raw.desconto),
-        imposto: numberOrZero(raw.imposto),
-        afiliados: numberOrZero(raw.afiliados),
-        roas: numberOrZero(raw.roas),
-        marketplaceRate: numberOrZero(raw.marketplaceRate),
-        marketplaceFixed: numberOrZero(raw.marketplaceFixed)
-      };
-    }
-
-    function loadCalculatorState() {
-      return normalizeCalculatorState(readJSONStorage(CALCULATOR_STATE_KEY, {}));
-    }
-
-    function saveCalculatorState(nextState) {
-      calculatorState = normalizeCalculatorState(nextState);
-      writeJSONStorage(CALCULATOR_STATE_KEY, calculatorState, { debounce: 120 });
-    }
 
     function loadProfile() {
       const parsed = readJSONStorage(PROFILE_KEY, {});
@@ -242,18 +209,20 @@ const THEME_KEY = 'precificador_theme_v149';
     function setWorkspaceView(view = 'products') {
       currentWorkspaceView = view === 'listings' ? 'listings' : 'products';
       saveWorkspaceView();
-      const calculatorBtn = document.getElementById('workspace-view-products-btn');
+      const productsBtn = document.getElementById('workspace-view-products-btn');
       const listingsBtn = document.getElementById('workspace-view-listings-btn');
-      const calculatorWrap = document.getElementById('product-families-wrap');
+      const familiesWrap = document.getElementById('product-families-wrap');
       const listingsWrap = document.getElementById('products-table-wrap');
-      const empty = document.getElementById('empty-state');
-      if (calculatorBtn) calculatorBtn.classList.toggle('active', currentWorkspaceView === 'products');
+      if (productsBtn) productsBtn.classList.toggle('active', currentWorkspaceView === 'products');
       if (listingsBtn) listingsBtn.classList.toggle('active', currentWorkspaceView === 'listings');
-      if (calculatorWrap) calculatorWrap.classList.toggle('hidden', currentWorkspaceView !== 'products');
+      if (familiesWrap) familiesWrap.classList.toggle('hidden', currentWorkspaceView !== 'products');
       if (listingsWrap) listingsWrap.classList.toggle('hidden', currentWorkspaceView !== 'listings');
-      if (empty) empty.classList.toggle('hidden', currentWorkspaceView === 'products');
       const bulkBar = document.getElementById('bulk-bar');
       if (bulkBar && currentWorkspaceView !== 'listings') bulkBar.classList.add('hidden');
+      const quickHint = document.querySelector('.quick-entry-help');
+      if (quickHint) quickHint.textContent = currentWorkspaceView === 'products'
+        ? 'Cadastre o produto base uma vez. Depois vincule Shopee, Mercado Livre e outros canais sem duplicar sua operação.'
+        : 'Aqui você enxerga e ajusta cada anúncio/canal individualmente, com inline edit e auto-save.';
       renderProducts();
     }
 
@@ -824,7 +793,6 @@ const THEME_KEY = 'precificador_theme_v149';
       if (!prod.nome.trim()) return 'Preencha o nome do produto.';
       if (!prod.sku.trim()) return 'Preencha o SKU.';
       if (!prod.custo || prod.custo <= 0) return 'Preencha um custo válido.';
-      if ((prod.marketplace || 'shopee') === 'mercadolivre' && numberOrZero(prod.marketplaceRate) <= 0) return 'Informe a comissão do Mercado Livre.';
       if (prod.modo === 'margem' && (!Number.isFinite(prod.margem) || prod.margem <= 0)) return 'Informe a margem de lucro.';
       if (prod.modo === 'preco' && (!prod.precoVendaFixo || prod.precoVendaFixo <= 0)) return 'Informe o preço de venda.';
       if (prod.modo === 'lucro' && (!prod.lucroDesejado || prod.lucroDesejado <= 0)) return 'Informe o lucro desejado.';
@@ -976,13 +944,13 @@ const THEME_KEY = 'precificador_theme_v149';
 
     function getSessionDisplayName() {
       const username = getLocalSessionUser();
-      if (!username) return '';
-      return isGuestMode() || username === 'guest' ? 'Guest' : username;
+      if (!username || username === 'guest') return '';
+      return username;
     }
 
     function updateSessionBadge() {
       const username = getSessionDisplayName();
-      const modeText = !username ? 'Faça login ou use o Guest para operar.' : (isGuestMode() ? 'Modo Guest neste navegador' : 'Conta local validada neste navegador');
+      const modeText = !username ? 'Faça login para operar.' : 'Conta local ativa neste navegador';
       const avatarText = (username || 'PR').slice(0, 2).toUpperCase();
 
       const profileLabel = document.getElementById('profile-session-user');
@@ -1002,7 +970,7 @@ const THEME_KEY = 'precificador_theme_v149';
       const panelAvatar = document.getElementById('profile-panel-avatar');
 
       if (headerName) headerName.textContent = username || 'Perfil';
-      if (headerSub) headerSub.textContent = username ? (isGuestMode() ? 'Guest liberado' : 'Conta ativa') : 'Conta, ajustes e logout';
+      if (headerSub) headerSub.textContent = username ? 'Conta ativa' : 'Conta, ajustes e logout';
       if (headerAvatar) headerAvatar.textContent = avatarText;
       if (panelName) panelName.textContent = username || 'Sem sessão';
       if (panelCopy) panelCopy.textContent = username ? modeText : 'Abra perfil, ajustes e logout num lugar só, sem poluir a home.';
@@ -1334,35 +1302,33 @@ const THEME_KEY = 'precificador_theme_v149';
           rate: numberOrZero(bracket.rate) / 100,
           fixed: numberOrZero(bracket.fixed),
           label: bracket.label,
-          bracket,
-          pending: false
+          bracket
         };
       }
 
       if (marketplace === 'mercadolivre') {
-        const ratePercent = manualRate > 0 ? manualRate : 0;
-        const fixedFee = manualFixed > 0 ? manualFixed : 0;
-        const pending = ratePercent <= 0;
-        const label = pending ? 'Informe a comissão do ML' : `ML manual • ${ratePercent.toFixed(1)}%${fixedFee > 0 ? ` + ${fmt(fixedFee)}` : ''}`;
+        const listingType = (prod.listingType === 'premium' ? 'premium' : 'classic');
+        const preset = appSettings?.mercadoLivre?.[listingType] || DEFAULT_APP_SETTINGS.mercadoLivre[listingType];
+        const ratePercent = manualRate > 0 ? manualRate : numberOrZero(preset.rate);
+        const fixedFee = manualFixed > 0 ? manualFixed : numberOrZero(preset.fixed);
+        const label = `${listingType === 'premium' ? 'Premium' : 'Clássico'}${manualRate > 0 || manualFixed > 0 ? ' • manual' : ''}`;
         return {
           rate: ratePercent / 100,
           fixed: fixedFee,
           label,
-          bracket: { label },
-          pending
+          bracket: { label }
         };
       }
 
       const preset = appSettings?.tiktok?.standard || DEFAULT_APP_SETTINGS.tiktok.standard;
       const ratePercent = manualRate > 0 ? manualRate : numberOrZero(preset.rate);
       const fixedFee = manualFixed > 0 ? manualFixed : numberOrZero(preset.fixed);
-      const label = `TikTok padrão • ${ratePercent.toFixed(1)}% + ${fmt(fixedFee)}`;
+      const label = `TikTok padrão${manualRate > 0 || manualFixed > 0 ? ' • manual' : ''}`;
       return {
         rate: ratePercent / 100,
         fixed: fixedFee,
         label,
-        bracket: { label },
-        pending: false
+        bracket: { label }
       };
     }
 
@@ -1455,7 +1421,7 @@ const THEME_KEY = 'precificador_theme_v149';
           lucro,
           margemReal,
           inviavel: false,
-          taxasPendentes: !!feeConfig.pending
+          taxasPendentes: false
         };
       }
 
@@ -2413,7 +2379,8 @@ const THEME_KEY = 'precificador_theme_v149';
       const result = calcProduct(prod);
       const sim = getWarSimulation(prod, result, input.value);
       output.textContent = sim.text;
-      output.classList.toggle('pulse-danger', !sim.ok);
+      output.classList.toggle('pulse-danger', sim.margin < 5);
+      output.classList.toggle('pulse-danger', sim.margin < 5);
     }
 
     function updateDetailWarGame() {
@@ -2884,25 +2851,31 @@ const THEME_KEY = 'precificador_theme_v149';
       const families = getProductFamilies(list);
       lastVisibleProductIds = list.map((item) => item.id);
       const tbody = document.getElementById('products-grid');
+      const familyTbody = document.getElementById('product-families-grid');
       const empty = document.getElementById('empty-state');
       const tableWrap = document.getElementById('products-table-wrap');
-      const calculatorWrap = document.getElementById('product-families-wrap');
+      const familyWrap = document.getElementById('product-families-wrap');
 
       if (list.length === 0) {
-        if (tbody) tbody.innerHTML = '<tr><td colspan="11" class="grid-empty-cell">Nenhum anúncio salvo ainda. Use a Calculadora para montar a conta e salvar o primeiro item.</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="grid-empty-cell">Nada encontrado nesta visão. Ajuste filtros ou salve um item no cadastro express.</td></tr>';
+        if (familyTbody) familyTbody.innerHTML = '<tr><td colspan="8" class="grid-empty-cell">Nenhum produto base encontrado nesta visão.</td></tr>';
+        empty.classList.remove('hidden');
         if (tableWrap) tableWrap.classList.add('hidden');
-        if (empty) empty.classList.toggle('hidden', currentWorkspaceView !== 'listings');
+        if (familyWrap) familyWrap.classList.add('hidden');
       } else {
+        empty.classList.add('hidden');
         if (tbody) tbody.innerHTML = list.map((p, index) => renderProductRow(p, index)).join('');
-        if (empty) empty.classList.add('hidden');
+        if (familyTbody) familyTbody.innerHTML = families.map((family) => renderFamilyRow(family)).join('');
       }
 
-      const calculatorBtn = document.getElementById('workspace-view-products-btn');
+      const productsBtn = document.getElementById('workspace-view-products-btn');
       const listingsBtn = document.getElementById('workspace-view-listings-btn');
-      if (calculatorBtn) calculatorBtn.classList.toggle('active', currentWorkspaceView === 'products');
+      const familiesWrapToggle = document.getElementById('product-families-wrap');
+      const listingsWrapToggle = document.getElementById('products-table-wrap');
+      if (productsBtn) productsBtn.classList.toggle('active', currentWorkspaceView === 'products');
       if (listingsBtn) listingsBtn.classList.toggle('active', currentWorkspaceView === 'listings');
-      if (calculatorWrap) calculatorWrap.classList.toggle('hidden', currentWorkspaceView !== 'products');
-      if (tableWrap) tableWrap.classList.toggle('hidden', currentWorkspaceView !== 'listings' || list.length === 0);
+      if (familiesWrapToggle) familiesWrapToggle.classList.toggle('hidden', currentWorkspaceView !== 'products' || list.length === 0);
+      if (listingsWrapToggle) listingsWrapToggle.classList.toggle('hidden', currentWorkspaceView !== 'listings' || list.length === 0);
       applyColumnVisibility();
       updateSelectAllVisibleState();
       updateBulkBar(list);
@@ -2968,31 +2941,33 @@ const THEME_KEY = 'precificador_theme_v149';
       const priceText = r.inviavel ? 'Inviável' : fmt(r.precoEfetivo);
       const lucroText = r.inviavel ? '—' : fmt(r.lucro);
       const margemText = r.inviavel ? '—' : `${r.margemReal.toFixed(1)}%`;
-      const idValue = p.idCustom || '—';
-      const skuValue = p.sku || '—';
+      const targetValue = numberOrZero(p.margem);
+      const extraMeta = [
+        p.idCustom ? `<span class="row-meta-chip">ID ${esc(p.idCustom)}</span>` : '',
+        p.sku ? `<span class="row-meta-chip">SKU ${esc(p.sku)}</span>` : '',
+        p.categoria ? `<span class="row-meta-chip">${esc(p.categoria)}</span>` : '',
+        numberOrZero(p.desconto) > 0 ? `<span class="row-meta-chip">-${numberOrZero(p.desconto).toFixed(1).replace('.0','')}%</span>` : ''
+      ].filter(Boolean).join('');
 
       return `
         <tr data-product-id="${p.id}" class="${isSelected ? 'is-selected' : ''}">
           <td>
             <input type="checkbox" class="grid-checkbox" aria-label="Selecionar ${esc(p.nome)}" ${selectedAttr} onclick="event.stopPropagation()" onchange="toggleProductSelection(${p.id}, this.checked)" />
           </td>
-          <td data-col="id">
-            <input type="text" class="inline-cell compact-id" value="${esc(idValue === '—' ? '' : idValue)}" placeholder="ID" aria-label="ID do anúncio ${esc(p.nome || `Item ${index + 1}`)}" data-grid-col="id" data-product-id="${p.id}" onfocus="rememberInlineInitial(this)" onkeydown="handleInlineKeydown(event, this); handleGridNavigation(event, this)" onblur="saveInlineText(${p.id}, 'idCustom', this.value, this)" />
-          </td>
-          <td data-col="title">
+          <td data-col="product">
             <div class="row-product-cell">
-              <input type="text" class="inline-cell" value="${esc(p.nome)}" aria-label="Título do anúncio ${esc(p.nome || `Item ${index + 1}`)}" data-grid-col="nome" data-product-id="${p.id}" onfocus="rememberInlineInitial(this)" onkeydown="handleInlineKeydown(event, this); handleGridNavigation(event, this)" onblur="saveInlineText(${p.id}, 'nome', this.value, this)" />
-              <div class="row-meta"><span class="row-meta-chip">${esc(marketLabel)}</span>${p.categoria ? `<span class="row-meta-chip">${esc(p.categoria)}</span>` : ''}</div>
+              <input type="text" class="inline-cell" value="${esc(p.nome)}" aria-label="Nome do produto ${esc(p.nome || `Item ${index + 1}`)}" data-grid-col="nome" data-product-id="${p.id}" onfocus="rememberInlineInitial(this)" onkeydown="handleInlineKeydown(event, this); handleGridNavigation(event, this)" onblur="saveInlineText(${p.id}, 'nome', this.value, this)" />
+              <div class="row-meta">${extraMeta || `<span class="row-meta-chip">Item #${index + 1}</span>`}</div>
             </div>
           </td>
-          <td data-col="sku">
-            <input type="text" class="inline-cell compact-sku" value="${esc(skuValue === '—' ? '' : skuValue)}" placeholder="SKU" aria-label="SKU do anúncio ${esc(p.nome || `Item ${index + 1}`)}" data-grid-col="sku" data-product-id="${p.id}" onfocus="rememberInlineInitial(this)" onkeydown="handleInlineKeydown(event, this); handleGridNavigation(event, this)" onblur="saveInlineText(${p.id}, 'sku', this.value, this)" />
-          </td>
           <td data-col="marketplace">
-            <select class="inline-select row-marketplace" aria-label="Marketplace do anúncio ${esc(p.nome || `Item ${index + 1}`)}" data-grid-col="marketplace" data-product-id="${p.id}" onfocus="rememberInlineInitial(this)" onkeydown="handleGridNavigation(event, this)" onchange="saveInlineSelect(${p.id}, 'marketplace', this.value)">${renderMarketplaceOptions(p.marketplace || 'shopee')}</select>
+            <select class="inline-select row-marketplace" aria-label="Marketplace do produto ${esc(p.nome || `Item ${index + 1}`)}" data-grid-col="marketplace" data-product-id="${p.id}" onfocus="rememberInlineInitial(this)" onkeydown="handleGridNavigation(event, this)" onchange="saveInlineSelect(${p.id}, 'marketplace', this.value)">${renderMarketplaceOptions(p.marketplace || 'shopee')}</select>
           </td>
           <td data-col="custo" class="grid-num">
-            <input type="text" inputmode="decimal" class="inline-money compact" value="${esc(formatMoneyInputValue(p.custo))}" aria-label="Custo do anúncio ${esc(p.nome || `Item ${index + 1}`)}" data-grid-col="custo" data-product-id="${p.id}" onfocus="rememberInlineInitial(this)" oninput="handleMoneyTyping(this)" onkeydown="handleInlineKeydown(event, this); handleGridNavigation(event, this)" onblur="saveInlineMoney(${p.id}, 'custo', this.value, this)" />
+            <input type="text" inputmode="decimal" class="inline-money compact" value="${esc(formatMoneyInputValue(p.custo))}" aria-label="Custo do produto ${esc(p.nome || `Item ${index + 1}`)}" data-grid-col="custo" data-product-id="${p.id}" onfocus="rememberInlineInitial(this)" oninput="handleMoneyTyping(this)" onkeydown="handleInlineKeydown(event, this); handleGridNavigation(event, this)" onblur="saveInlineMoney(${p.id}, 'custo', this.value, this)" />
+          </td>
+          <td data-col="target" class="grid-num">
+            <input type="number" min="0" step="0.1" class="inline-number compact" value="${esc(targetValue.toFixed(1).replace('.0',''))}" aria-label="Meta de margem do produto ${esc(p.nome || `Item ${index + 1}`)}" data-grid-col="margem" data-product-id="${p.id}" onfocus="rememberInlineInitial(this)" onkeydown="handleInlineKeydown(event, this); handleGridNavigation(event, this)" onblur="saveInlineNumber(${p.id}, 'margem', this.value, 'margem', this)" />
           </td>
           <td data-col="preco" class="grid-num">${priceText}</td>
           <td data-col="lucro" class="grid-num"><span class="row-status ${lucroClass}">${lucroText}</span></td>
@@ -3131,217 +3106,6 @@ const THEME_KEY = 'precificador_theme_v149';
       renderProducts();
     }
 
-    function getCalculatorFormState() {
-      return normalizeCalculatorState({
-        idCustom: document.getElementById('calc-id-custom')?.value || '',
-        nome: document.getElementById('calc-nome')?.value || '',
-        sku: document.getElementById('calc-sku')?.value || '',
-        marketplace: document.getElementById('calc-marketplace')?.value || 'shopee',
-        mode: document.getElementById('calc-mode')?.value || 'margem',
-        custo: parseLocaleNumber(document.getElementById('calc-custo')?.value || 0),
-        margem: parseLocaleNumber(document.getElementById('calc-margem')?.value || 20) || 20,
-        precoVendaFixo: parseLocaleNumber(document.getElementById('calc-preco-fixo')?.value || 0),
-        lucroDesejado: parseLocaleNumber(document.getElementById('calc-lucro-desejado')?.value || 0),
-        outros: parseLocaleNumber(document.getElementById('calc-outros')?.value || 0),
-        full: parseLocaleNumber(document.getElementById('calc-full')?.value || 0),
-        desconto: parseLocaleNumber(document.getElementById('calc-desconto')?.value || 0),
-        imposto: parseLocaleNumber(document.getElementById('calc-imposto')?.value || 0),
-        afiliados: parseLocaleNumber(document.getElementById('calc-afiliados')?.value || 0),
-        roas: parseLocaleNumber(document.getElementById('calc-roas')?.value || 0),
-        marketplaceRate: parseLocaleNumber(document.getElementById('calc-marketplace-rate')?.value || 0),
-        marketplaceFixed: parseLocaleNumber(document.getElementById('calc-marketplace-fixed')?.value || 0)
-      });
-    }
-
-    function fillCalculatorForm(state = calculatorState) {
-      const safe = normalizeCalculatorState(state);
-      if (document.getElementById('calc-id-custom')) document.getElementById('calc-id-custom').value = safe.idCustom || '';
-      if (document.getElementById('calc-nome')) document.getElementById('calc-nome').value = safe.nome || '';
-      if (document.getElementById('calc-sku')) document.getElementById('calc-sku').value = safe.sku || '';
-      if (document.getElementById('calc-marketplace')) document.getElementById('calc-marketplace').value = safe.marketplace || 'shopee';
-      if (document.getElementById('calc-mode')) document.getElementById('calc-mode').value = safe.mode || 'margem';
-      if (document.getElementById('calc-custo')) document.getElementById('calc-custo').value = safe.custo ? formatMoneyInputValue(safe.custo) : '';
-      if (document.getElementById('calc-margem')) document.getElementById('calc-margem').value = safe.margem || 20;
-      if (document.getElementById('calc-preco-fixo')) document.getElementById('calc-preco-fixo').value = safe.precoVendaFixo ? formatMoneyInputValue(safe.precoVendaFixo) : '';
-      if (document.getElementById('calc-lucro-desejado')) document.getElementById('calc-lucro-desejado').value = safe.lucroDesejado ? formatMoneyInputValue(safe.lucroDesejado) : '';
-      if (document.getElementById('calc-outros')) document.getElementById('calc-outros').value = safe.outros ? formatMoneyInputValue(safe.outros) : '';
-      if (document.getElementById('calc-full')) document.getElementById('calc-full').value = safe.full ? formatMoneyInputValue(safe.full) : '';
-      if (document.getElementById('calc-desconto')) document.getElementById('calc-desconto').value = safe.desconto || '';
-      if (document.getElementById('calc-imposto')) document.getElementById('calc-imposto').value = safe.imposto || '';
-      if (document.getElementById('calc-afiliados')) document.getElementById('calc-afiliados').value = safe.afiliados || '';
-      if (document.getElementById('calc-roas')) document.getElementById('calc-roas').value = safe.roas || '';
-      if (document.getElementById('calc-marketplace-rate')) document.getElementById('calc-marketplace-rate').value = safe.marketplaceRate || '';
-      if (document.getElementById('calc-marketplace-fixed')) document.getElementById('calc-marketplace-fixed').value = safe.marketplaceFixed ? formatMoneyInputValue(safe.marketplaceFixed) : '';
-    }
-
-    function updateCalculatorModeFields() {
-      const mode = document.getElementById('calc-mode')?.value || 'margem';
-      document.getElementById('calc-mode-field-margem')?.classList.toggle('hidden', mode !== 'margem');
-      document.getElementById('calc-mode-field-preco')?.classList.toggle('hidden', mode !== 'preco');
-      document.getElementById('calc-mode-field-lucro')?.classList.toggle('hidden', mode !== 'lucro');
-    }
-
-    function updateCalculatorMarketplaceFields() {
-      const marketplace = document.getElementById('calc-marketplace')?.value || 'shopee';
-      const showManual = marketplace === 'mercadolivre';
-      document.getElementById('calc-marketplace-rate-wrap')?.classList.toggle('hidden', !showManual);
-      document.getElementById('calc-marketplace-fixed-wrap')?.classList.toggle('hidden', !showManual);
-      const note = document.getElementById('calc-fee-note');
-      if (note) {
-        note.textContent = marketplace === 'mercadolivre'
-          ? 'Mercado Livre não tem taxa travada aqui. Informe a comissão da categoria e, se existir, a taxa fixa.'
-          : marketplace === 'tiktok'
-            ? 'TikTok Shop está configurado com 12% de comissão + R$ 2,00 fixo.'
-            : 'Shopee segue as faixas automáticas configuradas nas taxas globais.';
-      }
-    }
-
-    function buildCalculatorProduct() {
-      const state = getCalculatorFormState();
-      return createBaseProduct({
-        idCustom: state.idCustom,
-        nome: state.nome,
-        sku: state.sku,
-        marketplace: state.marketplace,
-        modo: state.mode,
-        custo: state.custo,
-        margem: state.margem,
-        precoVendaFixo: state.precoVendaFixo,
-        lucroDesejado: state.lucroDesejado,
-        outros: state.outros,
-        full: state.full,
-        desconto: state.desconto,
-        imposto: state.imposto,
-        afiliados: state.afiliados,
-        roas: state.roas,
-        marketplaceRate: state.marketplaceRate,
-        marketplaceFixed: state.marketplaceFixed,
-        listingType: 'classic'
-      });
-    }
-
-    function renderCalculatorResult() {
-      const prod = buildCalculatorProduct();
-      saveCalculatorState(getCalculatorFormState());
-      const result = calcProduct(prod);
-      const status = document.getElementById('calc-result-status');
-      const marketplace = document.getElementById('calc-result-marketplace');
-      const price = document.getElementById('calc-result-price');
-      const effective = document.getElementById('calc-result-effective');
-      const fee = document.getElementById('calc-result-fee');
-      const profit = document.getElementById('calc-result-profit');
-      const margin = document.getElementById('calc-result-margin');
-      const note = document.getElementById('calc-result-note');
-      if (!status || !marketplace || !price || !effective || !fee || !profit || !margin || !note) return;
-
-      marketplace.textContent = getMarketplaceLabel(prod.marketplace || 'shopee');
-      fee.textContent = result.bracket?.label || '—';
-
-      if (!prod.custo || prod.custo <= 0) {
-        status.className = 'tag tag-neutral';
-        status.textContent = 'Aguardando dados';
-        price.textContent = 'R$ 0,00';
-        effective.textContent = 'R$ 0,00';
-        profit.textContent = 'R$ 0,00';
-        margin.textContent = '0,0%';
-        note.textContent = 'Preencha custo, plataforma e modo de cálculo para o sistema fechar a conta.';
-        return;
-      }
-
-      if (result.inviavel) {
-        status.className = 'tag tag-red';
-        status.textContent = 'Conta inviável';
-        price.textContent = 'Inviável';
-        effective.textContent = '—';
-        profit.textContent = '—';
-        margin.textContent = '0,0%';
-        note.textContent = 'Os custos e percentuais estouraram a conta. Revise margem, preço ou encargos.';
-        return;
-      }
-
-      const tone = result.taxasPendentes ? 'tag-amber' : result.margemReal >= 12 ? 'tag-green' : result.margemReal >= 5 ? 'tag-amber' : 'tag-red';
-      status.className = `tag ${tone}`;
-      status.textContent = result.taxasPendentes ? 'Comissão pendente' : result.margemReal >= 12 ? 'Saudável' : result.margemReal >= 5 ? 'Atenção' : 'Crítico';
-      price.textContent = fmt(result.precoVenda);
-      effective.textContent = fmt(result.precoEfetivo);
-      profit.textContent = fmt(result.lucro);
-      margin.textContent = `${result.margemReal.toFixed(1)}%`;
-      note.textContent = result.taxasPendentes
-        ? 'Para o Mercado Livre a conta só fica confiável quando você informa a comissão da categoria.'
-        : `Taxa aplicada: ${result.marketplaceFeeLabel || result.bracket?.label || '—'}.`;
-    }
-
-    function handleCalculatorInputChange() {
-      renderCalculatorResult();
-    }
-
-    function clearCalculatorForm() {
-      const next = normalizeCalculatorState({ marketplace: 'shopee', mode: 'margem', margem: 20 });
-      saveCalculatorState(next);
-      fillCalculatorForm(next);
-      updateCalculatorModeFields();
-      updateCalculatorMarketplaceFields();
-      renderCalculatorResult();
-      document.getElementById('calc-id-custom')?.focus();
-    }
-
-    function saveCalculatorProduct() {
-      const prod = buildCalculatorProduct();
-      const validationError = validateProduct(prod, null, '');
-      if (validationError) {
-        showToast(validationError, 'error');
-        return;
-      }
-      if (prod.marketplace === 'mercadolivre' && numberOrZero(prod.marketplaceRate) <= 0) {
-        showToast('No Mercado Livre informe a comissão da categoria antes de salvar.', 'error');
-        return;
-      }
-      addProductRecord(prod);
-      saveProducts();
-      renderProducts();
-      setWorkspaceView('listings');
-      showToast('Anúncio salvo a partir da calculadora.', 'success');
-    }
-
-    async function openCalculatorAdvanced() {
-      const prod = buildCalculatorProduct();
-      if (!prod.nome || numberOrZero(prod.custo) <= 0) {
-        showToast('Preencha pelo menos título e custo antes de abrir a ficha avançada.', 'info');
-        return;
-      }
-      await openModal();
-      setFormState({
-        editId: '',
-        draftId: '',
-        idCustom: prod.idCustom || '',
-        nome: prod.nome || '',
-        sku: prod.sku || '',
-        marketplace: prod.marketplace || 'shopee',
-        modo: prod.modo || 'margem',
-        custo: prod.custo || '',
-        margem: prod.margem || '',
-        precoVendaFixo: prod.precoVendaFixo || '',
-        lucroDesejado: prod.lucroDesejado || '',
-        outros: prod.outros || '',
-        full: prod.full || '',
-        desconto: prod.desconto || '',
-        imposto: prod.imposto || '',
-        afiliados: prod.afiliados || '',
-        roas: prod.roas || '',
-        categoria: '',
-        listingType: 'classic',
-        marketplaceRate: prod.marketplaceRate || '',
-        marketplaceFixed: prod.marketplaceFixed || ''
-      });
-    }
-
-    function loadCalculatorIntoUI() {
-      fillCalculatorForm(calculatorState);
-      updateCalculatorModeFields();
-      updateCalculatorMarketplaceFields();
-      renderCalculatorResult();
-    }
-
     function getQuickEntryData() {
       return {
         nome: (document.getElementById('quick-nome')?.value || '').trim(),
@@ -3446,7 +3210,7 @@ const THEME_KEY = 'precificador_theme_v149';
         if (el.tagName === 'SELECT') el.value = '';
         else el.value = '';
       });
-      showToast(`Edição em massa aplicada em ${selectedProductIds.size} anúncio(s).`, 'success');
+      showToast(`Edição em massa aplicada em ${selectedProductIds.size} produtos.`, 'success');
     }
 
     function updateQuickSummary(list, families = []) {
@@ -3460,12 +3224,12 @@ const THEME_KEY = 'precificador_theme_v149';
       const familyCount = families.length || getProductFamilies(list).length;
 
       summary.textContent = currentWorkspaceView === 'products'
-        ? 'Calculadora pronta para simular e salvar anúncios.'
+        ? `${familyCount} ${familyCount === 1 ? 'produto base' : 'produtos base'}${activeMarketplace !== 'todos' ? ` em ${getMarketplaceLabel(activeMarketplace)}` : ''}.`
         : `${list.length} ${list.length === 1 ? 'anúncio' : 'anúncios'}${activeMarketplace !== 'todos' ? ` em ${getMarketplaceLabel(activeMarketplace)}` : ''}.`;
 
       const parts = [];
-      parts.push(`<span class="tag tag-neutral">${currentWorkspaceView === 'products' ? 'calculadora ativa' : `${list.length} em tela`}</span>`);
-      if (currentWorkspaceView === 'products') parts.push(`<span class="tag tag-blue">TikTok 12% + R$ 2</span>`);
+      parts.push(`<span class="tag tag-neutral">${currentWorkspaceView === 'products' ? familyCount : list.length} em tela</span>`);
+      if (currentWorkspaceView === 'products') parts.push(`<span class="tag tag-blue">${list.length} canais vinculados</span>`);
       if (healthy > 0) parts.push(`<span class="tag tag-green">${healthy} com ótima margem</span>`);
       if (discountCount > 0) parts.push(`<span class="tag tag-blue">${discountCount} em promoção</span>`);
       if (pending > 0) parts.push(`<span class="tag tag-amber">${pending} com taxa pendente</span>`);
@@ -3962,28 +3726,17 @@ Deseja substituir tudo pelos dados do arquivo?`,
     }
 
     function enterGuestMode() {
-      localStorage.setItem(GUEST_MODE_KEY, '1');
-      setLocalSessionUser('guest');
-      updateSessionBadge();
-      unlockApp({ message: 'Modo Guest liberado neste navegador.' });
+      setAccessStatus('gate-auth-status', 'O modo convidado está desativado nesta versão.', 'error');
     }
 
     function updateMarketplaceFields() {
       const marketplace = document.getElementById('prod-marketplace')?.value || 'shopee';
-      const showMarketplaceConfig = marketplace === 'mercadolivre';
-      const showListingType = false;
+      const showMarketplaceConfig = marketplace === 'mercadolivre' || marketplace === 'tiktok';
+      const showListingType = marketplace === 'mercadolivre';
       document.getElementById('field-marketplace-rate')?.classList.toggle('hidden', !showMarketplaceConfig);
       document.getElementById('field-marketplace-fixed')?.classList.toggle('hidden', !showMarketplaceConfig);
       document.getElementById('field-listing-type')?.classList.toggle('hidden', !showListingType);
-      const help = document.getElementById('marketplace-fee-help');
-      if (help) {
-        help.classList.remove('hidden');
-        help.textContent = marketplace === 'mercadolivre'
-          ? 'No Mercado Livre a comissão muda por categoria. Preencha a comissão manualmente para a conta ficar confiável.'
-          : marketplace === 'tiktok'
-            ? 'TikTok Shop usa 12% de comissão + R$ 2,00 fixo por padrão nesta versão.'
-            : 'Shopee usa as faixas configuradas globalmente na calculadora.';
-      }
+      document.getElementById('marketplace-fee-help')?.classList.toggle('hidden', !showMarketplaceConfig);
     }
 
     function setAccessStatus(targetId, message = '', tone = '') {
@@ -4004,7 +3757,9 @@ Deseja substituir tudo pelos dados do arquivo?`,
 
     function showGateStep(step) {
       ['gate-auth-step', 'gate-paywall-step'].forEach((id) => {
-        document.getElementById(id).classList.toggle('hidden', id !== step);
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('hidden', id !== step);
       });
     }
 
@@ -4040,8 +3795,10 @@ Deseja substituir tudo pelos dados do arquivo?`,
       document.getElementById('gate-login-user').value = username;
       document.getElementById('gate-login-pass').value = '';
       setAccessTab('login');
-      setAccessStatus('gate-auth-status', 'Cadastro criado. Agora falta liberar o acesso no checkout.', 'success');
-      await afterLoginGate();
+      document.getElementById('gate-register-pass').value = '';
+      document.getElementById('gate-register-pass-confirm').value = '';
+      setAccessStatus('gate-auth-status', 'Cadastro criado com sucesso.', 'success');
+      unlockApp({ message: 'Cadastro criado e acesso liberado.' });
     }
 
     async function loginSimpleAccount() {
@@ -4064,16 +3821,18 @@ Deseja substituir tudo pelos dados do arquivo?`,
       setLocalSessionUser(username);
       updateSessionBadge();
       setAccessStatus('gate-auth-status', 'Login validado.', 'success');
-      await afterLoginGate();
+      unlockApp({ message: 'Login realizado com sucesso.' });
     }
 
     function logoutSimpleAccount() {
       clearLocalSessionUser();
-      localStorage.setItem(GUEST_MODE_KEY, '1');
-      setLocalSessionUser('guest');
       updateSessionBadge();
       document.getElementById('gate-login-pass').value = '';
-      unlockApp({ message: 'Sessão reiniciada. O painel continuou liberado neste navegador.' });
+      setAccessTab('login');
+      showGateStep('gate-auth-step');
+      document.getElementById('access-gate').classList.remove('hidden');
+      document.body.classList.add('access-locked');
+      setAccessStatus('gate-auth-status', 'Conta desconectada. Faça login novamente.', 'success');
     }
 
     async function fetchJson(url, options = {}) {
@@ -4103,16 +3862,15 @@ Deseja substituir tudo pelos dados do arquivo?`,
     
     async function afterLoginGate() {
       updateSessionBadge();
-      showGateStep('gate-paywall-step');
-      const username = getLocalSessionUser();
-      document.getElementById('gate-paywall-copy').textContent = `Login ok para ${username}. Agora clique no checkout da Cakto para concluir a compra. Enquanto a automação total não fecha, o modo Guest continua liberado para testar o painel.`;
-      await refreshPaywallPrice();
+      unlockApp({ message: 'Acesso liberado.' });
     }
 
     
     async function refreshPaywallPrice() {
-      document.getElementById('gate-price').textContent = fmt(DEFAULT_PAYWALL_PRICE);
-      document.getElementById('gate-price-label').textContent = STATIC_PAYWALL_LABEL;
+      const priceEl = document.getElementById('gate-price');
+      const labelEl = document.getElementById('gate-price-label');
+      if (priceEl) priceEl.textContent = fmt(DEFAULT_PAYWALL_PRICE);
+      if (labelEl) labelEl.textContent = STATIC_PAYWALL_LABEL;
     }
 
     
@@ -4142,43 +3900,36 @@ Deseja substituir tudo pelos dados do arquivo?`,
 
     
     async function startCaktoCheckout() {
-      const username = getLocalSessionUser();
-      if (!username) {
-        showGateStep('gate-auth-step');
-        setAccessStatus('gate-auth-status', 'Faça login antes de abrir o checkout.', 'error');
-        return;
-      }
-
-      localStorage.setItem(CHECKOUT_PENDING_KEY, JSON.stringify({
-        username,
-        createdAt: Date.now(),
-        checkoutUrl: CAKTO_CHECKOUT_URL
-      }));
-
-      setAccessStatus('gate-paywall-status', 'Checkout aberto em nova aba. Enquanto a automação não fecha 100%, use Guest para testar o painel ou finalize o pagamento para operar.', 'success');
-      window.open(CAKTO_CHECKOUT_URL, '_blank', 'noopener,noreferrer');
+      setAccessStatus('gate-auth-status', 'O paywall está desativado nesta versão.', 'error');
     }
 
     
     async function checkCaktoStatus(silent = false) {
-      const username = getLocalSessionUser() || 'cliente';
-      const msg = `Pagamento concluído? Envie o login ${username} junto com o e-mail usado na compra para a liberação manual do acesso.`;
-      setAccessStatus('gate-paywall-status', msg, 'success');
+      setAccessStatus('gate-auth-status', 'O paywall está desativado nesta versão.', 'error');
       return false;
     }
 
     async function bootAccessGate() {
       updateSessionBadge();
       await refreshPaywallPrice();
-      if (!getLocalSessionUser()) {
-        localStorage.setItem(GUEST_MODE_KEY, '1');
-        setLocalSessionUser('guest');
+      if (isGuestMode() || getLocalSessionUser() === 'guest') {
+        clearLocalSessionUser();
+        updateSessionBadge();
       }
-      unlockApp({ message: 'Painel liberado neste navegador.' });
+      const username = getLocalSessionUser();
+      if (!username) {
+        showGateStep('gate-auth-step');
+        return;
+      }
+      const loginUser = document.getElementById('gate-login-user');
+      if (loginUser) loginUser.value = username;
+      document.getElementById('access-gate')?.classList.add('hidden');
+      document.body.classList.remove('access-locked');
+      localStorage.removeItem(CHECKOUT_PENDING_KEY);
     }
 
 
-    document.addEventListener('keydown' , (e) => {
+    document.addEventListener('keydown', (e) => {
       trapFocusOnTab(e);
       const active = document.activeElement;
       const isTyping = active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName);
@@ -4319,17 +4070,6 @@ Deseja substituir tudo pelos dados do arquivo?`,
       });
     });
 
-    ['calc-id-custom','calc-sku','calc-nome','calc-marketplace','calc-custo','calc-mode','calc-margem','calc-preco-fixo','calc-lucro-desejado','calc-marketplace-rate','calc-marketplace-fixed','calc-outros','calc-full','calc-desconto','calc-imposto','calc-afiliados','calc-roas'].forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && !['TEXTAREA'].includes(el.tagName)) {
-          event.preventDefault();
-          saveCalculatorProduct();
-        }
-      });
-    });
-
     const prefersDarkScheme = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     if (prefersDarkScheme) {
       prefersDarkScheme.addEventListener?.('change', (event) => {
@@ -4341,7 +4081,6 @@ Deseja substituir tudo pelos dados do arquivo?`,
     }
 
     clearQuickEntry(false);
-    loadCalculatorIntoUI();
 
     const modalEl = document.getElementById('modal');
     if (modalEl) modalEl.addEventListener('paste', handleSmartPaste);

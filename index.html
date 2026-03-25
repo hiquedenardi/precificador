@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Precificador_v1.50</title>
+  <title>Precificador_v1.49</title>
   <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css" />
 
@@ -14,28 +14,28 @@
     <div class="access-shell">
       <div class="access-grid">
         <section class="access-hero">
-          <span class="access-kicker">Precificador desbloqueável</span>
-          <h1 class="access-title">Login simples.<br>Checkout direto.<br>Cloudflare pronto.</h1>
-          <p class="access-copy">Entre com login e senha, ou use o modo Guest para pular o gate enquanto o fluxo automático não fica 100%. O checkout continua direto na Cakto e o painel segue leve no Cloudflare Pages.</p>
+          <span class="access-kicker">Precificação para marketplaces</span>
+          <h1 class="access-title">Calcule melhor.<br>Organize anúncios.<br>Venda com margem.</h1>
+          <p class="access-copy">Use um painel simples para precificar produtos, comparar plataformas e enxergar o lucro dos seus anúncios sem planilha confusa. Aqui o foco é operação rápida, leitura clara e decisão comercial no ponto.</p>
 
           <div class="market-badges">
             <span class="market-badge"><i class="market-dot" style="background:#f97316"></i>Shopee</span>
             <span class="market-badge"><i class="market-dot" style="background:#facc15"></i>Mercado Livre</span>
-            <span class="market-badge"><i class="market-dot" style="background:#f97316"></i>Cloudflare Pages</span>
+            <span class="market-badge"><i class="market-dot" style="background:#111827"></i>TikTok Shop</span>
           </div>
 
           <div class="access-feature-grid">
             <article class="access-feature">
-              <strong>Login e cadastro simples</strong>
-              <span>Fluxo leve com apenas usuário e senha, pensado para entrar rápido e ir direto para operação.</span>
+              <strong>Calculadora prática</strong>
+              <span>Descubra preço ideal, margem e lucro em segundos para cada produto e cada cenário de venda.</span>
             </article>
             <article class="access-feature">
-              <strong>Checkout com Cakto</strong>
-              <span>O checkout abre direto na Cakto e o pós-pagamento é orientado dentro da própria tela.</span>
+              <strong>Comparação por plataforma</strong>
+              <span>Ajuste comissão, taxas e custo fixo sem se perder entre regras diferentes de cada canal.</span>
             </article>
             <article class="access-feature">
-              <strong>Foco seller</strong>
-              <span>Depois do acesso liberado, seguem ativas as rotinas de Shopee, Mercado Livre e os módulos já existentes.</span>
+              <strong>Visão de anúncios</strong>
+              <span>Organize ID, título, SKU e resultado por plataforma em uma leitura direta e fácil de revisar.</span>
             </article>
           </div>
         </section>
@@ -46,6 +46,8 @@
               <button type="button" class="access-tab active" id="gate-tab-login" onclick="setAccessTab('login')">Entrar</button>
               <button type="button" class="access-tab" id="gate-tab-register" onclick="setAccessTab('register')">Cadastro</button>
             </div>
+
+            <p class="access-note">Crie sua conta local e entre direto. O acesso está liberado sem pagamento nesta versão.</p>
 
             <form id="gate-login-form" class="access-form" onsubmit="event.preventDefault(); loginSimpleAccount();">
               <div>
@@ -58,9 +60,8 @@
               </div>
               <div class="access-actions">
                 <button type="submit" class="access-btn primary">Entrar</button>
-                <button type="button" class="access-btn ghost" onclick="enterGuestMode()">Entrar como Guest</button>
               </div>
-              <p class="access-note">Modo Guest libera o painel imediatamente neste navegador enquanto o fluxo pago automático ainda está sendo fechado.</p>
+              <p class="access-note">Sua conta fica ativa neste navegador para você voltar e continuar de onde parou.</p>
             </form>
 
             <form id="gate-register-form" class="access-form hidden" onsubmit="event.preventDefault(); registerSimpleAccount();">
@@ -79,38 +80,10 @@
               <div class="access-actions">
                 <button type="submit" class="access-btn primary">Criar cadastro</button>
               </div>
-              <p class="access-note">Este cadastro é simples, local e rápido. Serve como gate inicial do navegador antes da liberação paga.</p>
+              <p class="access-note">O cadastro é salvo neste navegador e já libera a entrada no painel.</p>
             </form>
 
             <p id="gate-auth-status" class="access-status"></p>
-          </div>
-
-          <div class="access-step hidden" id="gate-paywall-step">
-            <span class="access-kicker">Acesso pago</span>
-            <h2 class="mt-4 text-3xl font-black tracking-tight text-slate-950">Checkout no controle</h2>
-            <p class="access-note" id="gate-paywall-copy">Login validado. Agora falta liberar o acesso da ferramenta.</p>
-
-            <div class="access-paywall-box">
-              <p class="text-[0.76rem] font-bold uppercase tracking-[0.18em] text-slate-400">Desbloqueio</p>
-              <div class="access-price">
-                <strong id="gate-price">R$ 0,00</strong>
-                <span id="gate-price-label">acesso</span>
-              </div>
-
-              <div class="access-list">
-                <div class="access-list-item"><i></i><span>Paywall pensado para Shopee e Mercado Livre, sem desmontar o restante do precificador.</span></div>
-                <div class="access-list-item"><i></i><span>Checkout externo direto, sem backend e sem functions na hospedagem.</span></div>
-                <div class="access-list-item"><i></i><span>Fluxo limpo: entrou, pagou, liberou.</span></div>
-              </div>
-
-              <div class="access-actions mt-5">
-                <button type="button" class="access-btn livepix" onclick="startCaktoCheckout()">Ir para o checkout</button>
-                <button type="button" class="access-btn ghost" onclick="checkCaktoStatus(false)">Já paguei</button>
-                <button type="button" class="access-btn ghost" onclick="logoutSimpleAccount()">Trocar conta</button>
-              </div>
-            </div>
-
-            <p id="gate-paywall-status" class="access-status"></p>
           </div>
         </section>
       </div>
@@ -131,7 +104,7 @@
           </div>
           <div class="min-w-0">
             <p class="text-[0.72rem] font-bold uppercase tracking-[0.24em] text-slate-400">Precificação</p>
-            <div class="flex items-center gap-2"><h1 class="truncate text-lg font-black tracking-tight text-slate-900 sm:text-xl">Precificador</h1><span class="rounded-full border border-slate-200/60 bg-white/35 px-2 py-0.5 text-[0.54rem] font-medium tracking-[0.24em] text-slate-500/80">v1.50</span></div>
+            <div class="flex items-center gap-2"><h1 class="truncate text-lg font-black tracking-tight text-slate-900 sm:text-xl">Precificador</h1><span class="rounded-full border border-slate-200/60 bg-white/35 px-2 py-0.5 text-[0.54rem] font-medium tracking-[0.24em] text-slate-500/80">v1.49</span></div>
             <p class="text-sm text-slate-500">Precificação de marketplaces.</p>
           </div>
         </div>
@@ -218,7 +191,7 @@
                 <button type="button" class="profile-popover-action" onclick="logoutFromMenu()">
                   <div>
                     <strong>Trocar conta</strong>
-                    <span>Encerra a sessão local ou o modo Guest neste navegador.</span>
+                    <span>Encerra a sessão local deste navegador.</span>
                   </div>
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 7.5 6.5 12 10 16.5M7 12h10.5M16.5 7.5v-1A2.5 2.5 0 0 0 14 4H8.5A2.5 2.5 0 0 0 6 6.5v11A2.5 2.5 0 0 0 8.5 20H14a2.5 2.5 0 0 0 2.5-2.5v-1" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
@@ -497,11 +470,10 @@
         <div id="columns-menu-wrap" class="columns-menu-wrap">
           <button type="button" id="columns-menu-btn" onclick="toggleColumnsMenu()" class="btn btn-secondary panel-toggle-btn">Colunas visíveis</button>
           <div id="columns-menu" class="columns-menu hidden">
-            <label class="column-option"><input type="checkbox" data-column-toggle="id" checked onchange="updateColumnToggle('id', this.checked)" /> ID</label>
-            <label class="column-option"><input type="checkbox" data-column-toggle="title" checked onchange="updateColumnToggle('title', this.checked)" /> Título</label>
-            <label class="column-option"><input type="checkbox" data-column-toggle="sku" checked onchange="updateColumnToggle('sku', this.checked)" /> SKU</label>
-            <label class="column-option"><input type="checkbox" data-column-toggle="marketplace" checked onchange="updateColumnToggle('marketplace', this.checked)" /> Plataforma</label>
+            <label class="column-option"><input type="checkbox" data-column-toggle="product" checked onchange="updateColumnToggle('product', this.checked)" /> Produto</label>
+            <label class="column-option"><input type="checkbox" data-column-toggle="marketplace" checked onchange="updateColumnToggle('marketplace', this.checked)" /> Canal</label>
             <label class="column-option"><input type="checkbox" data-column-toggle="custo" checked onchange="updateColumnToggle('custo', this.checked)" /> Custo</label>
+            <label class="column-option"><input type="checkbox" data-column-toggle="target" checked onchange="updateColumnToggle('target', this.checked)" /> Meta %</label>
             <label class="column-option"><input type="checkbox" data-column-toggle="preco" checked onchange="updateColumnToggle('preco', this.checked)" /> Preço</label>
             <label class="column-option"><input type="checkbox" data-column-toggle="lucro" checked onchange="updateColumnToggle('lucro', this.checked)" /> Lucro</label>
             <label class="column-option"><input type="checkbox" data-column-toggle="margem" checked onchange="updateColumnToggle('margem', this.checked)" /> Margem</label>
@@ -523,15 +495,15 @@
     <section class="surface ops-workspace">
       <div class="ops-section-head">
         <div class="ops-section-copy">
-          <strong>Centro operacional</strong>
-          <span>Agora o fluxo principal ficou em duas frentes: calcular preço e acompanhar os anúncios já salvos.</span>
+          <strong>Workspace operacional</strong>
+          <span>Tabela compacta, cadastro express e atualização em massa para operar muito mais produto por tela.</span>
         </div>
-        <div class="ops-inline-group"><span class="ops-inline-pill">Fluxo simplificado</span><span class="ops-inline-pill ops-inline-pill-muted">Calculadora + anúncios</span></div>
+        <div class="ops-inline-group"><span class="ops-inline-pill">Menos scroll. Mais operação.</span><span class="ops-inline-pill ops-inline-pill-muted">Inline edit + auto-save</span></div>
       </div>
 
       <div class="workspace-toolbar">
         <div class="segmented-control" role="tablist" aria-label="Modo de trabalho">
-          <button type="button" id="workspace-view-products-btn" class="segmented-btn active" onclick="setWorkspaceView('products')">Calculadora</button>
+          <button type="button" id="workspace-view-products-btn" class="segmented-btn active" onclick="setWorkspaceView('products')">Produtos</button>
           <button type="button" id="workspace-view-listings-btn" class="segmented-btn" onclick="setWorkspaceView('listings')">Anúncios</button>
         </div>
         <div class="workspace-toolbar-actions">
@@ -553,140 +525,32 @@
         </div>
       </div>
 
-      <div id="product-families-wrap" class="calculator-view-wrap">
-        <div class="calculator-shell">
-          <div class="calculator-main-card">
-            <div class="calculator-main-grid">
-              <section class="calculator-form-card">
-                <div class="calculator-block-head">
-                  <div>
-                    <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Calculadora principal</p>
-                    <h3 class="mt-1 text-lg font-black text-slate-950">Preço certo por anúncio</h3>
-                    <p class="mt-1 text-sm text-slate-500">Shopee usa faixa automática, TikTok usa 12% + R$ 2,00 e Mercado Livre pede comissão manual por categoria.</p>
-                  </div>
-                  <div class="calculator-head-actions">
-                    <button type="button" class="btn btn-secondary" onclick="clearCalculatorForm()">Limpar</button>
-                    <button type="button" class="btn btn-primary" onclick="saveCalculatorProduct()">Salvar anúncio</button>
-                  </div>
-                </div>
-
-                <div class="calculator-grid">
-                  <div>
-                    <label class="field-label" for="calc-id-custom">ID do anúncio</label>
-                    <input type="text" id="calc-id-custom" class="apple-input" placeholder="Ex: 100023" oninput="handleCalculatorInputChange()" />
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-sku">SKU</label>
-                    <input type="text" id="calc-sku" class="apple-input" placeholder="Ex: berlin-q-branco" oninput="handleCalculatorInputChange()" />
-                  </div>
-                  <div class="calculator-grid-span-2">
-                    <label class="field-label" for="calc-nome">Título do anúncio</label>
-                    <input type="text" id="calc-nome" class="apple-input" placeholder="Ex: Protetor de colchão casal impermeável" oninput="handleCalculatorInputChange()" />
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-marketplace">Plataforma</label>
-                    <select id="calc-marketplace" class="apple-select" onchange="updateCalculatorMarketplaceFields(); handleCalculatorInputChange()">
-                      <option value="shopee">Shopee</option>
-                      <option value="mercadolivre">Mercado Livre</option>
-                      <option value="tiktok">TikTok Shop</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-custo">Custo do produto</label>
-                    <input type="text" inputmode="decimal" id="calc-custo" class="apple-input" placeholder="0,00" oninput="handleMoneyTyping(this); handleCalculatorInputChange()" onblur="formatMoneyField(this); handleCalculatorInputChange()" />
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-mode">Modo de cálculo</label>
-                    <select id="calc-mode" class="apple-select" onchange="updateCalculatorModeFields(); handleCalculatorInputChange()">
-                      <option value="margem">Margem alvo</option>
-                      <option value="preco">Preço final</option>
-                      <option value="lucro">Lucro desejado</option>
-                    </select>
-                  </div>
-                  <div id="calc-mode-field-margem">
-                    <label class="field-label" for="calc-margem">Margem alvo %</label>
-                    <input type="number" id="calc-margem" class="apple-input" placeholder="20" min="0" step="0.1" oninput="handleCalculatorInputChange()" />
-                  </div>
-                  <div id="calc-mode-field-preco" class="hidden">
-                    <label class="field-label" for="calc-preco-fixo">Preço final</label>
-                    <input type="text" inputmode="decimal" id="calc-preco-fixo" class="apple-input" placeholder="0,00" oninput="handleMoneyTyping(this); handleCalculatorInputChange()" onblur="formatMoneyField(this); handleCalculatorInputChange()" />
-                  </div>
-                  <div id="calc-mode-field-lucro" class="hidden">
-                    <label class="field-label" for="calc-lucro-desejado">Lucro desejado</label>
-                    <input type="text" inputmode="decimal" id="calc-lucro-desejado" class="apple-input" placeholder="0,00" oninput="handleMoneyTyping(this); handleCalculatorInputChange()" onblur="formatMoneyField(this); handleCalculatorInputChange()" />
-                  </div>
-                  <div id="calc-marketplace-rate-wrap" class="hidden">
-                    <label class="field-label" for="calc-marketplace-rate">Comissão ML (%)</label>
-                    <input type="number" id="calc-marketplace-rate" class="apple-input" placeholder="Ex: 16" min="0" step="0.1" oninput="handleCalculatorInputChange()" />
-                  </div>
-                  <div id="calc-marketplace-fixed-wrap" class="hidden">
-                    <label class="field-label" for="calc-marketplace-fixed">Taxa fixa ML (R$)</label>
-                    <input type="text" inputmode="decimal" id="calc-marketplace-fixed" class="apple-input" placeholder="0,00" oninput="handleMoneyTyping(this); handleCalculatorInputChange()" onblur="formatMoneyField(this); handleCalculatorInputChange()" />
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-outros">Outros custos</label>
-                    <input type="text" inputmode="decimal" id="calc-outros" class="apple-input" placeholder="0,00" oninput="handleMoneyTyping(this); handleCalculatorInputChange()" onblur="formatMoneyField(this); handleCalculatorInputChange()" />
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-full">Logística / full</label>
-                    <input type="text" inputmode="decimal" id="calc-full" class="apple-input" placeholder="0,00" oninput="handleMoneyTyping(this); handleCalculatorInputChange()" onblur="formatMoneyField(this); handleCalculatorInputChange()" />
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-desconto">Desconto %</label>
-                    <input type="number" id="calc-desconto" class="apple-input" placeholder="0" min="0" step="0.1" oninput="handleCalculatorInputChange()" />
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-imposto">Imposto %</label>
-                    <input type="number" id="calc-imposto" class="apple-input" placeholder="0" min="0" step="0.1" oninput="handleCalculatorInputChange()" />
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-afiliados">Afiliados %</label>
-                    <input type="number" id="calc-afiliados" class="apple-input" placeholder="0" min="0" step="0.1" oninput="handleCalculatorInputChange()" />
-                  </div>
-                  <div>
-                    <label class="field-label" for="calc-roas">ROAS</label>
-                    <input type="number" id="calc-roas" class="apple-input" placeholder="0" min="0" step="0.1" oninput="handleCalculatorInputChange()" />
-                  </div>
-                </div>
-                <div class="calculator-inline-note" id="calc-fee-note">Shopee usa as faixas configuradas na calculadora.</div>
-              </section>
-
-              <aside class="calculator-result-card">
-                <div class="calculator-result-head">
-                  <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Resultado</p>
-                  <span id="calc-result-status" class="tag tag-neutral">Aguardando dados</span>
-                </div>
-                <div class="calculator-kpi-grid">
-                  <article class="calculator-kpi-card">
-                    <span>Preço para anunciar</span>
-                    <strong id="calc-result-price">R$ 0,00</strong>
-                  </article>
-                  <article class="calculator-kpi-card">
-                    <span>Preço que vende</span>
-                    <strong id="calc-result-effective">R$ 0,00</strong>
-                  </article>
-                  <article class="calculator-kpi-card">
-                    <span>Lucro líquido</span>
-                    <strong id="calc-result-profit">R$ 0,00</strong>
-                  </article>
-                  <article class="calculator-kpi-card">
-                    <span>Margem real</span>
-                    <strong id="calc-result-margin">0,0%</strong>
-                  </article>
-                </div>
-                <div class="calculator-summary-list">
-                  <div class="calculator-summary-row"><span>Taxa aplicada</span><strong id="calc-result-fee">—</strong></div>
-                  <div class="calculator-summary-row"><span>Marketplace</span><strong id="calc-result-marketplace">—</strong></div>
-                </div>
-                <div class="calculator-note-card" id="calc-result-note">Preencha custo, plataforma e modo de cálculo para o sistema fechar a conta.</div>
-                <div class="calculator-result-actions">
-                  <button type="button" class="btn btn-secondary" onclick="openCalculatorAdvanced()">Ficha avançada</button>
-                  <button type="button" class="btn btn-secondary" onclick="setWorkspaceView('listings')">Ver anúncios salvos</button>
-                </div>
-              </aside>
-            </div>
+      <div class="quick-entry-shell">
+        <div class="quick-entry-grid">
+          <div>
+            <label class="field-label" for="quick-nome">Nome do produto</label>
+            <input type="text" id="quick-nome" class="apple-input" placeholder="Ex: Kit lençol queen 400 fios" />
           </div>
+          <div>
+            <label class="field-label" for="quick-custo">Custo</label>
+            <input type="text" inputmode="decimal" id="quick-custo" class="apple-input" placeholder="0,00" />
+          </div>
+          <div>
+            <label class="field-label" for="quick-marketplace">Canal inicial</label>
+            <select id="quick-marketplace" class="apple-select">
+              <option value="shopee">Shopee</option>
+              <option value="mercadolivre">Mercado Livre</option>
+              <option value="tiktok">TikTok Shop</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="quick-margem">Margem alvo %</label>
+            <input type="number" id="quick-margem" class="apple-input" placeholder="20" min="0" step="0.1" />
+          </div>
+          <button type="button" onclick="saveQuickProduct()" class="btn btn-primary">Salvar rápido</button>
+          <button type="button" onclick="openQuickAdvanced()" class="btn btn-secondary">Avançado</button>
         </div>
+        <div class="quick-entry-help">Fluxo rápido: cadastre o produto base e depois vincule os canais. A visão Produtos agrupa SKU + nome para você não operar item duplicado.</div>
       </div>
 
       <div id="bulk-bar" class="bulk-bar hidden">
@@ -741,25 +605,42 @@
             <path d="M9 8V6.8A1.8 1.8 0 0 1 10.8 5h2.4A1.8 1.8 0 0 1 15 6.8V8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
           </svg>
         </div>
-        <h3 class="text-xl font-black text-slate-900">Nenhum anúncio salvo</h3>
-        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">Use a aba Calculadora para montar a conta e salvar seu primeiro anúncio.</p>
+        <h3 class="text-xl font-black text-slate-900">Nenhum produto encontrado</h3>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">Cadastre um produto base, importe um CSV ou ajuste os filtros para continuar.</p>
         <div class="mt-5 flex justify-center gap-2">
-          <button onclick="setWorkspaceView('products')" class="btn btn-primary w-auto">Ir para calculadora</button>
-          <button onclick="openModal()" class="btn btn-secondary w-auto">Ficha avançada</button>
+          <button onclick="saveQuickProduct()" class="btn btn-primary w-auto">Salvar rápido</button>
+          <button onclick="openModal()" class="btn btn-secondary w-auto">Abrir ficha avançada</button>
         </div>
       </div>
 
-      <div id="products-table-wrap" class="products-table-wrap hidden">
-        <table class="products-table listings-table-v2">
+      <div id="product-families-wrap" class="products-table-wrap">
+        <table class="products-table product-family-table">
           <thead>
             <tr>
-              <th style="width:44px;"><input type="checkbox" id="select-all-visible" class="grid-checkbox" onclick="toggleAllVisibleFromHeader(this.checked)" aria-label="Selecionar anúncios visíveis" /></th>
-              <th data-col="id">ID</th>
-              <th data-col="title">Título</th>
-              <th data-col="sku">SKU</th>
-              <th data-col="marketplace">Plataforma</th>
+              <th>Produto base</th>
+              <th>SKU</th>
+              <th>Canais</th>
+              <th class="grid-num">Custo base</th>
+              <th class="grid-num">Melhor preço</th>
+              <th class="grid-num">Margem média</th>
+              <th>Status</th>
+              <th style="width:138px; text-align:right;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="product-families-grid"></tbody>
+        </table>
+      </div>
+
+      <div id="products-table-wrap" class="products-table-wrap hidden">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th style="width:44px;"><input type="checkbox" id="select-all-visible" class="grid-checkbox" onclick="toggleAllVisibleFromHeader(this.checked)" aria-label="Selecionar produtos visíveis" /></th>
+              <th data-col="product">Produto</th>
+              <th data-col="marketplace">Canal</th>
               <th data-col="custo" class="grid-num">Custo</th>
-              <th data-col="preco" class="grid-num">Preço</th>
+              <th data-col="target" class="grid-num">Meta %</th>
+              <th data-col="preco" class="grid-num">Preço venda</th>
               <th data-col="lucro" class="grid-num">Lucro</th>
               <th data-col="margem" class="grid-num">Margem</th>
               <th data-col="status">Status</th>
