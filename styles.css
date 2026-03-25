@@ -2825,3 +2825,72 @@ body.theme-dark .market-tab { background: rgba(255,255,255,0.03); }
 }
 .sku-copy-inline:hover { color: var(--text); background: rgba(0,113,227,0.06); }
 body.theme-dark .sku-copy-inline:hover { background: rgba(10,132,255,0.12); }
+
+
+.app-shell-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.app-shell-tabs-copy {
+  min-width: 260px;
+  flex: 1 1 320px;
+}
+
+.app-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.app-tab-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.94rem;
+  font-weight: 800;
+  padding: 12px 18px;
+  border-radius: 999px;
+  transition: .18s ease;
+}
+
+.app-tab-btn.active {
+  background: var(--text);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
+}
+
+body.theme-dark .app-segmented {
+  background: rgba(28, 28, 30, 0.96);
+  border-color: rgba(255,255,255,0.08);
+}
+
+body.theme-dark .app-tab-btn.active {
+  background: linear-gradient(180deg, #2c2c2e, #1c1c1e);
+}
+
+@media (max-width: 780px) {
+  .app-shell-tabs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app-segmented {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .app-tab-btn {
+    width: 100%;
+    padding-inline: 10px;
+  }
+}

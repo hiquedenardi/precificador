@@ -14,9 +14,9 @@
     <div class="access-shell">
       <div class="access-grid">
         <section class="access-hero">
-          <span class="access-kicker">Precificação para marketplaces</span>
-          <h1 class="access-title">Calcule melhor.<br>Organize anúncios.<br>Venda com margem.</h1>
-          <p class="access-copy">Use um painel simples para precificar produtos, comparar plataformas e enxergar o lucro dos seus anúncios sem planilha confusa. Aqui o foco é operação rápida, leitura clara e decisão comercial no ponto.</p>
+          <span class="access-kicker">Acesso ao precificador</span>
+          <h1 class="access-title">Precifique melhor.<br>Compare plataformas.<br>Proteja sua margem.</h1>
+          <p class="access-copy">Entre para salvar seus produtos neste navegador, comparar Shopee, Mercado Livre e TikTok Shop, e acompanhar com clareza quanto sobra em cada anúncio.</p>
 
           <div class="market-badges">
             <span class="market-badge"><i class="market-dot" style="background:#f97316"></i>Shopee</span>
@@ -26,16 +26,16 @@
 
           <div class="access-feature-grid">
             <article class="access-feature">
-              <strong>Calculadora prática</strong>
-              <span>Descubra preço ideal, margem e lucro em segundos para cada produto e cada cenário de venda.</span>
+              <strong>Calculadora por plataforma</strong>
+              <span>Veja preço ideal, lucro e margem por canal sem ficar fazendo conta na mão.</span>
             </article>
             <article class="access-feature">
-              <strong>Comparação por plataforma</strong>
-              <span>Ajuste comissão, taxas e custo fixo sem se perder entre regras diferentes de cada canal.</span>
+              <strong>Produtos e anúncios organizados</strong>
+              <span>Cadastre uma base e acompanhe separadamente seus produtos e seus anúncios ativos.</span>
             </article>
             <article class="access-feature">
-              <strong>Visão de anúncios</strong>
-              <span>Organize ID, título, SKU e resultado por plataforma em uma leitura direta e fácil de revisar.</span>
+              <strong>Conta salva no navegador</strong>
+              <span>Depois do cadastro, seu acesso continua salvo neste dispositivo para entrar direto nas próximas vezes.</span>
             </article>
           </div>
         </section>
@@ -46,8 +46,6 @@
               <button type="button" class="access-tab active" id="gate-tab-login" onclick="setAccessTab('login')">Entrar</button>
               <button type="button" class="access-tab" id="gate-tab-register" onclick="setAccessTab('register')">Cadastro</button>
             </div>
-
-            <p class="access-note">Crie sua conta local e entre direto. O acesso está liberado sem pagamento nesta versão.</p>
 
             <form id="gate-login-form" class="access-form" onsubmit="event.preventDefault(); loginSimpleAccount();">
               <div>
@@ -61,7 +59,7 @@
               <div class="access-actions">
                 <button type="submit" class="access-btn primary">Entrar</button>
               </div>
-              <p class="access-note">Sua conta fica ativa neste navegador para você voltar e continuar de onde parou.</p>
+              <p class="access-note">Seu acesso fica salvo neste navegador depois do login.</p>
             </form>
 
             <form id="gate-register-form" class="access-form hidden" onsubmit="event.preventDefault(); registerSimpleAccount();">
@@ -80,7 +78,7 @@
               <div class="access-actions">
                 <button type="submit" class="access-btn primary">Criar cadastro</button>
               </div>
-              <p class="access-note">O cadastro é salvo neste navegador e já libera a entrada no painel.</p>
+              <p class="access-note">Cadastro simples e local. Seus dados de acesso ficam guardados apenas neste navegador.</p>
             </form>
 
             <p id="gate-auth-status" class="access-status"></p>
@@ -153,7 +151,7 @@
               <span class="profile-popover-avatar" id="header-profile-avatar">PR</span>
               <span class="profile-popover-meta">
                 <span class="profile-popover-name" id="header-profile-name">Perfil</span>
-                <span class="profile-popover-sub" id="header-profile-sub">Ajustes da conta</span>
+                <span class="profile-popover-sub" id="header-profile-sub">Conta ativa</span>
               </span>
               <svg viewBox="0 0 24 24" fill="none" class="profile-popover-chevron" aria-hidden="true">
                 <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -165,7 +163,7 @@
                 <span class="profile-popover-avatar" id="profile-panel-avatar">PR</span>
                 <div class="min-w-0">
                   <div class="profile-popover-panel-title" id="profile-panel-name">Sem sessão</div>
-                  <div class="profile-popover-panel-copy" id="profile-panel-copy">Abra perfil, ajustes e logout num lugar só, sem poluir a home.</div>
+                  <div class="profile-popover-panel-copy" id="profile-panel-copy">Sua conta fica salva neste navegador para você voltar direto ao painel.</div>
                 </div>
               </div>
 
@@ -191,7 +189,7 @@
                 <button type="button" class="profile-popover-action" onclick="logoutFromMenu()">
                   <div>
                     <strong>Trocar conta</strong>
-                    <span>Encerra a sessão local deste navegador.</span>
+                    <span>Encerra a sessão local salva neste navegador.</span>
                   </div>
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 7.5 6.5 12 10 16.5M7 12h10.5M16.5 7.5v-1A2.5 2.5 0 0 0 14 4H8.5A2.5 2.5 0 0 0 6 6.5v11A2.5 2.5 0 0 0 8.5 20H14a2.5 2.5 0 0 0 2.5-2.5v-1" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
@@ -205,7 +203,22 @@
 
   <main class="mx-auto flex max-w-7xl flex-col gap-5 px-3 pb-10 pt-5 sm:px-4 lg:px-5">
 
-    <section class="surface p-2 sm:p-3">
+    <section class="surface p-3 sm:p-4">
+      <div class="app-shell-tabs">
+        <div class="app-shell-tabs-copy">
+          <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Navegação</p>
+          <h2 class="mt-1 text-lg font-black text-slate-950">Escolha a área que quer operar</h2>
+          <p class="mt-1 text-sm text-slate-500">Separado por abas para ficar leve: cálculo numa área, produtos em outra e anúncios em outra.</p>
+        </div>
+        <div class="app-segmented" role="tablist" aria-label="Áreas principais do precificador">
+          <button type="button" id="app-tab-calculator" class="app-tab-btn active" onclick="setHomeTab('calculator')">Calculadora</button>
+          <button type="button" id="app-tab-products" class="app-tab-btn" onclick="setHomeTab('products')">Produtos</button>
+          <button type="button" id="app-tab-listings" class="app-tab-btn" onclick="setHomeTab('listings')">Anúncios</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="surface p-2 sm:p-3" data-app-tab="calculator">
       <div class="grid gap-2 md:grid-cols-4">
         <button onclick="setMarketplace('todos')" id="tab-todos" class="market-tab active">
           <span class="market-logo market-logo-neutral">
@@ -266,7 +279,7 @@
       </div>
     </section>
 
-    <section class="grid gap-5">
+    <section class="grid gap-5" data-app-tab="calculator">
       <section id="compare-panel" class="compare-card strategic-panel">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -294,7 +307,7 @@
         </div>
       </section>
     </section>
-    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-app-tab="calculator">
       <div class="stat-card">
         <div class="flex items-start justify-between gap-3">
           <div>
@@ -363,7 +376,7 @@
       </div>
     </section>
 
-    <section id="taxes-section" class="surface overflow-hidden hidden">
+    <section id="taxes-section" class="surface overflow-hidden hidden" data-app-tab="calculator">
       <button onclick="toggleTabela()" class="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6">
         <div class="min-w-0">
           <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Taxas</p>
@@ -436,7 +449,7 @@
       </div>
     </section>
 
-    <section class="surface p-4 sm:p-5">
+    <section class="surface p-4 sm:p-5" data-app-tab="products,listings">
       <div class="grid gap-3 lg:grid-cols-[1fr,220px]">
         <div class="relative">
           <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -463,9 +476,6 @@
       </div>
 
       <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200/70 pt-4">
-        <button type="button" id="toggle-panel-compare" onclick="togglePanelVisibility('compare')" class="btn btn-secondary panel-toggle-btn">Comparativo</button>
-        <button type="button" id="toggle-panel-mentor" onclick="togglePanelVisibility('mentor')" class="btn btn-secondary panel-toggle-btn">Mentor</button>
-        <button type="button" id="toggle-panel-spy" onclick="togglePanelVisibility('spy')" class="btn btn-secondary panel-toggle-btn">Concorrentes</button>
         <button type="button" id="density-toggle-btn" onclick="toggleTableDensity()" class="btn btn-secondary panel-toggle-btn">Densidade compacta</button>
         <div id="columns-menu-wrap" class="columns-menu-wrap">
           <button type="button" id="columns-menu-btn" onclick="toggleColumnsMenu()" class="btn btn-secondary panel-toggle-btn">Colunas visíveis</button>
@@ -492,7 +502,7 @@
         </div>
       </div>
     </section>
-    <section class="surface ops-workspace">
+    <section class="surface ops-workspace" data-app-tab="products,listings">
       <div class="ops-section-head">
         <div class="ops-section-copy">
           <strong>Workspace operacional</strong>
@@ -502,7 +512,7 @@
       </div>
 
       <div class="workspace-toolbar">
-        <div class="segmented-control" role="tablist" aria-label="Modo de trabalho">
+        <div class="segmented-control hidden" role="tablist" aria-label="Modo de trabalho">
           <button type="button" id="workspace-view-products-btn" class="segmented-btn active" onclick="setWorkspaceView('products')">Produtos</button>
           <button type="button" id="workspace-view-listings-btn" class="segmented-btn" onclick="setWorkspaceView('listings')">Anúncios</button>
         </div>
@@ -652,7 +662,7 @@
       </div>
     </section>
 
-    <section id="mentor-panel" class="mentor-panel strategic-panel p-4 sm:p-5">
+    <section id="mentor-panel" class="mentor-panel strategic-panel p-4 sm:p-5" data-app-tab="calculator">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Assistente</p>
@@ -674,7 +684,7 @@
       </div>
     </section>
 
-    <section id="spy-panel" class="surface strategic-panel p-4 sm:p-5">
+    <section id="spy-panel" class="surface strategic-panel p-4 sm:p-5" data-app-tab="calculator">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p class="text-[0.72rem] font-bold uppercase tracking-[0.18em] text-slate-400">Concorrência</p>
@@ -1229,7 +1239,7 @@
               <div class="min-w-0">
                 <p class="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-slate-400">Sessão ativa</p>
                 <strong id="profile-session-user" class="block truncate text-base font-black text-slate-950">—</strong>
-                <span id="profile-session-mode" class="block text-sm text-slate-500">Aguardando login</span>
+                <span id="profile-session-mode" class="block text-sm text-slate-500">Conta local</span>
               </div>
             </div>
             <button id="profile-logout-btn" type="button" onclick="logoutFromProfileModal()" class="btn btn-secondary hidden">Sair</button>

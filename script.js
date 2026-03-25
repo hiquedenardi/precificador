@@ -101,6 +101,8 @@ const THEME_KEY = 'precificador_theme_v149';
     let isCompactDensity = loadTableDensity();
     let currentTheme = loadTheme();
     let currentWorkspaceView = loadWorkspaceView();
+    const HOME_TAB_KEY = 'precificador_home_tab_v1';
+    let currentHomeTab = loadHomeTab();
 
     function loadProfile() {
       const parsed = readJSONStorage(PROFILE_KEY, {});
@@ -197,6 +199,46 @@ const THEME_KEY = 'precificador_theme_v149';
       applyTheme();
     }
 
+    function loadHomeTab() {
+      const saved = localStorage.getItem(HOME_TAB_KEY);
+      return ['calculator', 'products', 'listings'].includes(saved) ? saved : 'calculator';
+    }
+
+    function saveHomeTab() {
+      localStorage.setItem(HOME_TAB_KEY, currentHomeTab);
+    }
+
+    function setHomeTab(tab = 'calculator', options = {}) {
+      const syncWorkspace = options.syncWorkspace !== false;
+      currentHomeTab = ['calculator', 'products', 'listings'].includes(tab) ? tab : 'calculator';
+      saveHomeTab();
+
+      const tabs = {
+        calculator: document.getElementById('app-tab-calculator'),
+        products: document.getElementById('app-tab-products'),
+        listings: document.getElementById('app-tab-listings')
+      };
+      Object.entries(tabs).forEach(([key, btn]) => {
+        if (btn) btn.classList.toggle('active', key === currentHomeTab);
+      });
+
+      document.querySelectorAll('[data-app-tab]').forEach((el) => {
+        const raw = String(el.getAttribute('data-app-tab') || '');
+        const views = raw.split(',').map((item) => item.trim()).filter(Boolean);
+        const visible = views.includes(currentHomeTab);
+        el.classList.toggle('hidden', !visible);
+      });
+
+      if (syncWorkspace) {
+        if (currentHomeTab === 'products' && currentWorkspaceView !== 'products') {
+          setWorkspaceView('products', { syncHome: false });
+        }
+        if (currentHomeTab === 'listings' && currentWorkspaceView !== 'listings') {
+          setWorkspaceView('listings', { syncHome: false });
+        }
+      }
+    }
+
     function loadWorkspaceView() {
       const saved = localStorage.getItem(WORKSPACE_VIEW_KEY);
       return saved === 'listings' ? 'listings' : 'products';
@@ -206,7 +248,8 @@ const THEME_KEY = 'precificador_theme_v149';
       localStorage.setItem(WORKSPACE_VIEW_KEY, currentWorkspaceView);
     }
 
-    function setWorkspaceView(view = 'products') {
+    function setWorkspaceView(view = 'products', options = {}) {
+      const syncHome = options.syncHome !== false;
       currentWorkspaceView = view === 'listings' ? 'listings' : 'products';
       saveWorkspaceView();
       const productsBtn = document.getElementById('workspace-view-products-btn');
@@ -222,7 +265,10 @@ const THEME_KEY = 'precificador_theme_v149';
       const quickHint = document.querySelector('.quick-entry-help');
       if (quickHint) quickHint.textContent = currentWorkspaceView === 'products'
         ? 'Cadastre o produto base uma vez. Depois vincule Shopee, Mercado Livre e outros canais sem duplicar sua operação.'
-        : 'Aqui você enxerga e ajusta cada anúncio/canal individualmente, com inline edit e auto-save.';
+        : 'Aqui você enxerga cada anúncio individualmente, com lucro, margem e edição rápida por plataforma.';
+      if (syncHome && (currentHomeTab === 'products' || currentHomeTab === 'listings') && currentHomeTab !== currentWorkspaceView) {
+        setHomeTab(currentWorkspaceView, { syncWorkspace: false });
+      }
       renderProducts();
     }
 
@@ -944,13 +990,13 @@ const THEME_KEY = 'precificador_theme_v149';
 
     function getSessionDisplayName() {
       const username = getLocalSessionUser();
-      if (!username || username === 'guest') return '';
+      if (!username) return '';
       return username;
     }
 
     function updateSessionBadge() {
       const username = getSessionDisplayName();
-      const modeText = !username ? 'Faça login para operar.' : 'Conta local ativa neste navegador';
+      const modeText = !username ? 'Faça login para acessar seus dados salvos.' : 'Conta salva neste navegador';
       const avatarText = (username || 'PR').slice(0, 2).toUpperCase();
 
       const profileLabel = document.getElementById('profile-session-user');
@@ -973,7 +1019,7 @@ const THEME_KEY = 'precificador_theme_v149';
       if (headerSub) headerSub.textContent = username ? 'Conta ativa' : 'Conta, ajustes e logout';
       if (headerAvatar) headerAvatar.textContent = avatarText;
       if (panelName) panelName.textContent = username || 'Sem sessão';
-      if (panelCopy) panelCopy.textContent = username ? modeText : 'Abra perfil, ajustes e logout num lugar só, sem poluir a home.';
+      if (panelCopy) panelCopy.textContent = username ? modeText : 'Sua conta fica salva neste navegador para você voltar direto ao painel.';
       if (panelAvatar) panelAvatar.textContent = avatarText;
     }
 
@@ -3679,15 +3725,40 @@ Deseja substituir tudo pelos dados do arquivo?`,
 
 
 
-    const LOCAL_ACCOUNTS_KEY = 'precificador_local_accounts_v1';
+    const LOCAL_ACCOUNTS_KEY = 'precificador_local_accounts_v2';
+    const LOCAL_ACCOUNTS_LEGACY_KEY = 'precificador_local_accounts_v1';
     const LOCAL_SESSION_KEY = 'precificador_local_session_v1';
-    const GUEST_MODE_KEY = 'precificador_guest_mode_v1';
-    const CHECKOUT_PENDING_KEY = 'precificador_checkout_pending_v1';
-    const CAKTO_CHECKOUT_URL = 'https://pay.cakto.com.br/iygsxsi_817473';
-    const STATIC_PAYWALL_LABEL = 'Acesso mensal';
-    const DEFAULT_PAYWALL_PRICE = 79.9;
+
+    function normalizeAccountUsername(value = '') {
+      return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .slice(0, 60);
+    }
+
+    function migrateLegacyAccounts() {
+      try {
+        const current = localStorage.getItem(LOCAL_ACCOUNTS_KEY);
+        if (current) return;
+        const legacy = localStorage.getItem(LOCAL_ACCOUNTS_LEGACY_KEY);
+        if (!legacy) return;
+        const parsed = JSON.parse(legacy);
+        if (!Array.isArray(parsed)) return;
+        const sanitized = parsed
+          .filter((item) => item && item.username && item.passwordHash)
+          .map((item) => ({
+            username: normalizeAccountUsername(item.username),
+            passwordHash: String(item.passwordHash),
+            createdAt: Number(item.createdAt) || Date.now()
+          }))
+          .filter((item) => item.username);
+        localStorage.setItem(LOCAL_ACCOUNTS_KEY, JSON.stringify(sanitized));
+      } catch {}
+    }
 
     function readLocalAccounts() {
+      migrateLegacyAccounts();
       try {
         const raw = localStorage.getItem(LOCAL_ACCOUNTS_KEY);
         const list = raw ? JSON.parse(raw) : [];
@@ -3698,35 +3769,25 @@ Deseja substituir tudo pelos dados do arquivo?`,
     }
 
     function writeLocalAccounts(list) {
-      localStorage.setItem(LOCAL_ACCOUNTS_KEY, JSON.stringify(list));
+      localStorage.setItem(LOCAL_ACCOUNTS_KEY, JSON.stringify(Array.isArray(list) ? list : []));
     }
 
     function getLocalSessionUser() {
-      return (localStorage.getItem(LOCAL_SESSION_KEY) || '').trim();
+      return normalizeAccountUsername(localStorage.getItem(LOCAL_SESSION_KEY) || '');
     }
 
     function setLocalSessionUser(username) {
-      localStorage.setItem(LOCAL_SESSION_KEY, username);
+      localStorage.setItem(LOCAL_SESSION_KEY, normalizeAccountUsername(username));
     }
 
     function clearLocalSessionUser() {
       localStorage.removeItem(LOCAL_SESSION_KEY);
-      localStorage.removeItem(GUEST_MODE_KEY);
-      localStorage.removeItem(CHECKOUT_PENDING_KEY);
     }
 
     async function sha256Hex(value) {
       const data = new TextEncoder().encode(String(value || ''));
       const hash = await crypto.subtle.digest('SHA-256', data);
       return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function isGuestMode() {
-      return localStorage.getItem(GUEST_MODE_KEY) === '1';
-    }
-
-    function enterGuestMode() {
-      setAccessStatus('gate-auth-status', 'O modo convidado está desativado nesta versão.', 'error');
     }
 
     function updateMarketplaceFields() {
@@ -3755,21 +3816,17 @@ Deseja substituir tudo pelos dados do arquivo?`,
       setAccessStatus('gate-auth-status', '');
     }
 
-    function showGateStep(step) {
-      ['gate-auth-step', 'gate-paywall-step'].forEach((id) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.classList.toggle('hidden', id !== step);
-      });
-    }
-
     async function registerSimpleAccount() {
-      const username = (document.getElementById('gate-register-user').value || '').trim().toLowerCase();
+      const username = normalizeAccountUsername(document.getElementById('gate-register-user').value || '');
       const password = document.getElementById('gate-register-pass').value || '';
       const confirmPassword = document.getElementById('gate-register-pass-confirm').value || '';
 
       if (username.length < 3) {
         setAccessStatus('gate-auth-status', 'Use um login com pelo menos 3 caracteres.', 'error');
+        return;
+      }
+      if (!/^[a-z0-9._-]+(?: [a-z0-9._-]+)*$/.test(username)) {
+        setAccessStatus('gate-auth-status', 'Use apenas letras, números, ponto, traço, underline e espaço.', 'error');
         return;
       }
       if (password.length < 4) {
@@ -3787,22 +3844,23 @@ Deseja substituir tudo pelos dados do arquivo?`,
         return;
       }
 
-      const passwordHash = await sha256Hex(password);
-      accounts.push({ username, passwordHash, createdAt: Date.now() });
-      writeLocalAccounts(accounts);
-      setLocalSessionUser(username);
-      updateSessionBadge();
-      document.getElementById('gate-login-user').value = username;
-      document.getElementById('gate-login-pass').value = '';
-      setAccessTab('login');
-      document.getElementById('gate-register-pass').value = '';
-      document.getElementById('gate-register-pass-confirm').value = '';
-      setAccessStatus('gate-auth-status', 'Cadastro criado com sucesso.', 'success');
-      unlockApp({ message: 'Cadastro criado e acesso liberado.' });
+      try {
+        const passwordHash = await sha256Hex(password);
+        accounts.push({ username, passwordHash, createdAt: Date.now() });
+        writeLocalAccounts(accounts);
+        setLocalSessionUser(username);
+        updateSessionBadge();
+        setAccessTab('login');
+        document.getElementById('gate-login-user').value = username;
+        document.getElementById('gate-login-pass').value = '';
+        unlockApp({ message: 'Cadastro criado com sucesso.' });
+      } catch {
+        setAccessStatus('gate-auth-status', 'Não foi possível salvar a conta neste navegador.', 'error');
+      }
     }
 
     async function loginSimpleAccount() {
-      const username = (document.getElementById('gate-login-user').value || '').trim().toLowerCase();
+      const username = normalizeAccountUsername(document.getElementById('gate-login-user').value || '');
       const password = document.getElementById('gate-login-pass').value || '';
       const accounts = readLocalAccounts();
       const account = accounts.find((item) => item.username === username);
@@ -3812,120 +3870,54 @@ Deseja substituir tudo pelos dados do arquivo?`,
         return;
       }
 
-      const passwordHash = await sha256Hex(password);
-      if (passwordHash !== account.passwordHash) {
-        setAccessStatus('gate-auth-status', 'Senha incorreta.', 'error');
-        return;
+      try {
+        const passwordHash = await sha256Hex(password);
+        if (passwordHash !== account.passwordHash) {
+          setAccessStatus('gate-auth-status', 'Senha incorreta.', 'error');
+          return;
+        }
+        setLocalSessionUser(username);
+        updateSessionBadge();
+        unlockApp({ message: 'Login realizado com sucesso.' });
+      } catch {
+        setAccessStatus('gate-auth-status', 'Não foi possível validar este login agora.', 'error');
       }
-
-      setLocalSessionUser(username);
-      updateSessionBadge();
-      setAccessStatus('gate-auth-status', 'Login validado.', 'success');
-      unlockApp({ message: 'Login realizado com sucesso.' });
     }
 
     function logoutSimpleAccount() {
       clearLocalSessionUser();
       updateSessionBadge();
-      document.getElementById('gate-login-pass').value = '';
+      const loginPass = document.getElementById('gate-login-pass');
+      const loginUser = document.getElementById('gate-login-user');
+      if (loginPass) loginPass.value = '';
+      if (loginUser) loginUser.value = '';
       setAccessTab('login');
-      showGateStep('gate-auth-step');
       document.getElementById('access-gate').classList.remove('hidden');
       document.body.classList.add('access-locked');
-      setAccessStatus('gate-auth-status', 'Conta desconectada. Faça login novamente.', 'success');
-    }
-
-    async function fetchJson(url, options = {}) {
-      const response = await fetch(url, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(options.headers || {})
-        },
-        ...options
-      });
-
-      let payload = {};
-      try {
-        payload = await response.json();
-      } catch {
-        payload = {};
-      }
-
-      if (!response.ok) {
-        throw new Error(payload.message || 'Não foi possível concluir esta etapa.');
-      }
-
-      return payload;
-    }
-
-    
-    async function afterLoginGate() {
-      updateSessionBadge();
-      unlockApp({ message: 'Acesso liberado.' });
-    }
-
-    
-    async function refreshPaywallPrice() {
-      const priceEl = document.getElementById('gate-price');
-      const labelEl = document.getElementById('gate-price-label');
-      if (priceEl) priceEl.textContent = fmt(DEFAULT_PAYWALL_PRICE);
-      if (labelEl) labelEl.textContent = STATIC_PAYWALL_LABEL;
-    }
-
-    
-    async function verifyPaidSession(silent = false) {
-      return false;
+      setAccessStatus('gate-auth-status', 'Sessão encerrada.', 'success');
     }
 
     function unlockApp(data = {}) {
       updateSessionBadge();
       document.getElementById('access-gate').classList.add('hidden');
       document.body.classList.remove('access-locked');
-      localStorage.removeItem(CHECKOUT_PENDING_KEY);
-      const params = new URLSearchParams(window.location.search);
-      if (params.has('cakto_return') || params.has('order_id') || params.has('refId') || params.has('ref_id') || params.has('payment_cancelled')) {
-        params.delete('cakto_return');
-        params.delete('order_id');
-        params.delete('refId');
-        params.delete('ref_id');
-        params.delete('payment_cancelled');
-        const clean = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}${window.location.hash || ''}`;
-        history.replaceState({}, '', clean);
-      }
       if (typeof showToast === 'function') {
         showToast(data.message || 'Acesso liberado.', 'success');
       }
     }
 
-    
-    async function startCaktoCheckout() {
-      setAccessStatus('gate-auth-status', 'O paywall está desativado nesta versão.', 'error');
-    }
-
-    
-    async function checkCaktoStatus(silent = false) {
-      setAccessStatus('gate-auth-status', 'O paywall está desativado nesta versão.', 'error');
-      return false;
-    }
-
     async function bootAccessGate() {
+      migrateLegacyAccounts();
       updateSessionBadge();
-      await refreshPaywallPrice();
-      if (isGuestMode() || getLocalSessionUser() === 'guest') {
-        clearLocalSessionUser();
-        updateSessionBadge();
-      }
       const username = getLocalSessionUser();
       if (!username) {
-        showGateStep('gate-auth-step');
+        document.getElementById('access-gate').classList.remove('hidden');
+        document.body.classList.add('access-locked');
+        setAccessTab('login');
         return;
       }
-      const loginUser = document.getElementById('gate-login-user');
-      if (loginUser) loginUser.value = username;
-      document.getElementById('access-gate')?.classList.add('hidden');
-      document.body.classList.remove('access-locked');
-      localStorage.removeItem(CHECKOUT_PENDING_KEY);
+      document.getElementById('gate-login-user').value = username;
+      unlockApp({ message: 'Sessão restaurada.' });
     }
 
 
@@ -4094,10 +4086,12 @@ Deseja substituir tudo pelos dados do arquivo?`,
     applyTableDensity();
     applyPanelVisibility();
     applyColumnVisibility();
+    setHomeTab(currentHomeTab, { syncWorkspace: false });
     renderDrafts();
     updateTaxSection();
-    setWorkspaceView(currentWorkspaceView);
+    setWorkspaceView(currentWorkspaceView, { syncHome: false });
     renderProducts();
+    setHomeTab(currentHomeTab);
     calcPreview();
     updateSaveButtonState();
     updateSessionBadge();
